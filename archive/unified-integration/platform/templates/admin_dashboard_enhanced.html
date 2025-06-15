@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generic AI Simulator Platform - Advanced Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-header {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .header-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .system-health {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .health-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .health-indicator.warning {
+            background: #f39c12;
+        }
+
+        .health-indicator.critical {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+
+        /* API Key Management Styles */
+        .api-key-section {
+            margin-bottom: 20px;
+        }
+
+        .api-key-form {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .api-key-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .api-key-item {
+            display: grid;
+            grid-template-columns: 200px 1fr auto;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .api-key-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .api-key-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .api-key-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .key-preview {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .key-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .key-status.valid {
+            color: #27ae60;
+        }
+
+        .key-status.invalid {
+            color: #e74c3c;
+        }
+
+        .key-status.pending {
+            color: #f39c12;
+        }
+
+        .key-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Telemetry Section */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .telemetry-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .telemetry-chart {
+            height: 200px;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Maintenance Section */
+        .maintenance-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .maintenance-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .maintenance-card:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .maintenance-icon {
+            font-size: 2em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .maintenance-log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Notifications */
+        .notification-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 900;
+        }
+
+        .notification {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .notification.info {
+            border-left: 4px solid #3498db;
+        }
+
+        .notification.warning {
+            border-left: 4px solid #f39c12;
+        }
+
+        .notification.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        /* Utility Classes */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #3498db;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Integration Cards with Type Classification */
+        .integration-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .integration-card.chatbot {
+            border-color: #3498db;
+            background: linear-gradient(to right, rgba(52, 152, 219, 0.05), rgba(52, 152, 219, 0.02));
+        }
+        
+        .integration-card.simulator {
+            border-color: #9b59b6;
+            background: linear-gradient(to right, rgba(155, 89, 182, 0.05), rgba(155, 89, 182, 0.02));
+        }
+        
+        .integration-card.both {
+            border-color: #27ae60;
+            background: linear-gradient(to right, rgba(39, 174, 96, 0.05), rgba(39, 174, 96, 0.02));
+        }
+        
+        .integration-header {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .integration-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .integration-type-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .chatbot-icon {
+            background: #3498db;
+        }
+        
+        .simulator-icon {
+            background: #9b59b6;
+        }
+        
+        .both-icon {
+            background: #27ae60;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-cogs"></i> Engine Admin</h2>
+                <p>Advanced Dashboard</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#overview" class="nav-link active" data-section="overview">
+                    <i class="fas fa-tachometer-alt"></i> Overview
+                </a></li>
+                <li><a href="#api-keys" class="nav-link" data-section="api-keys">
+                    <i class="fas fa-key"></i> API Keys
+                </a></li>
+                <li><a href="#integrations" class="nav-link" data-section="integrations">
+                    <i class="fas fa-plug"></i> Integrations
+                </a></li>
+                <li><a href="#maintenance" class="nav-link" data-section="maintenance">
+                    <i class="fas fa-wrench"></i> Maintenance
+                </a></li>
+                <li><a href="#telemetry" class="nav-link" data-section="telemetry">
+                    <i class="fas fa-chart-line"></i> Telemetry
+                </a></li>
+                <li><a href="#learning" class="nav-link" data-section="learning">
+                    <i class="fas fa-brain"></i> Learning
+                </a></li>
+                <li><a href="#costs" class="nav-link" data-section="costs">
+                    <i class="fas fa-dollar-sign"></i> Costs
+                </a></li>
+                <li><a href="#dynamic-framework" class="nav-link" data-section="dynamic-framework">
+                    <i class="fas fa-network-wired"></i> Dynamic Framework
+                </a></li>
+                <li><a href="#service-discovery" class="nav-link" data-section="service-discovery">
+                    <i class="fas fa-search"></i> Service Discovery
+                </a></li>
+                <li><a href="#fallback-system" class="nav-link" data-section="fallback-system">
+                    <i class="fas fa-shield-alt"></i> Fallback System
+                </a></li>
+                <li><a href="#independent-core" class="nav-link" data-section="independent-core">
+                    <i class="fas fa-microchip"></i> Independent Core
+                </a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="header">
+                <div class="header-info">
+                    <h1>Generic AI Simulator Platform</h1>
+                    <p>Advanced integration management with auto-maintenance</p>
+                </div>
+                <div class="system-health">
+                    <button class="btn btn-success" onclick="window.location.href='/integration-quickstart'" style="margin-right: 20px;">
+                        <i class="fas fa-rocket"></i> Quick Integration Setup
+                    </button>
+                    <div class="health-indicator" id="health-indicator"></div>
+                    <div>
+                        <div style="font-weight: bold;">System Health</div>
+                        <div id="health-status" style="font-size: 14px; color: #666;">Checking...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview-section" class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> System Overview</h2>
+                    <button class="btn btn-primary" onclick="refreshOverview()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-plug"></i></div>
+                        <div class="stat-value" id="active-integrations">-</div>
+                        <div class="stat-label">Active Integrations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-value" id="api-calls-today">-</div>
+                        <div class="stat-label">API Calls Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-value" id="cost-today">-</div>
+                        <div class="stat-label">Cost Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-brain"></i></div>
+                        <div class="stat-value" id="patterns-learned">-</div>
+                        <div class="stat-label">Patterns Learned</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Integration Call-to-Action -->
+                <div style="margin-top: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 30px; text-align: center; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                    <h2 style="margin-bottom: 15px;"><i class="fas fa-rocket"></i> Add Mainstream AI Platforms</h2>
+                    <p style="margin-bottom: 20px; opacity: 0.9;">Integrate with OpenAI, Stable Diffusion, Anthropic, Midjourney, and more in seconds!</p>
+                    <button class="btn" style="background: white; color: #667eea; font-size: 18px; padding: 15px 30px;" onclick="window.location.href='/integration-quickstart'">
+                        <i class="fas fa-plus-circle"></i> Quick Integration Setup
+                    </button>
+                </div>
+            </div>
+
+            <!-- API Keys Section -->
+            <div id="api-keys-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-key"></i> API Key Management</h2>
+                    <button class="btn btn-success" onclick="showAddKeyModal()">
+                        <i class="fas fa-plus"></i> Add New Key
+                    </button>
+                </div>
+                
+                <div class="api-key-section">
+                    <form class="api-key-form" id="quick-add-form" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Integration</label>
+                            <select class="form-input" id="quick-integration">
+                                <option value="claude">Claude (Anthropic)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="stable_diffusion">Stable Diffusion</option>
+                                <option value="replicate">Replicate</option>
+                                <option value="runway">Runway ML</option>
+                                <option value="midjourney">Midjourney</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <input type="password" class="form-input" id="quick-api-key" placeholder="Enter API key">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="quickAddKey()">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="hideQuickAdd()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="api-key-list" id="api-key-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading API keys...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrations Section -->
+            <div id="integrations-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-plug"></i> Integration Status</h2>
+                    <button class="btn btn-primary" onclick="testAllIntegrations()">
+                        <i class="fas fa-vial"></i> Test All
+                    </button>
+                </div>
+                
+                <!-- Service Type Summary -->
+                <div style="display: flex; gap: 20px; margin-bottom: 30px; justify-content: center;">
+                    <div style="display: flex; align-items: center; padding: 10px 20px; background: rgba(52, 152, 219, 0.1); border-radius: 20px;">
+                        <span class="integration-type-icon chatbot-icon">💬</span>
+                        <div>
+                            <div style="font-weight: bold; color: #3498db;">Chatbots</div>
+                            <div style="font-size: 12px; color: #666;">Text Generation & Conversation</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; padding: 10px 20px; background: rgba(155, 89, 182, 0.1); border-radius: 20px;">
+                        <span class="integration-type-icon simulator-icon">🎨</span>
+                        <div>
+                            <div style="font-weight: bold; color: #9b59b6;">Simulators</div>
+                            <div style="font-size: 12px; color: #666;">Image, Video & Audio Generation</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; padding: 10px 20px; background: rgba(39, 174, 96, 0.1); border-radius: 20px;">
+                        <span class="integration-type-icon both-icon">🔄</span>
+                        <div>
+                            <div style="font-weight: bold; color: #27ae60;">Multi-Modal</div>
+                            <div style="font-size: 12px; color: #666;">Both Text & Media Generation</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="integrations-grid" class="integration-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading integrations...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Section -->
+            <div id="maintenance-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-wrench"></i> Auto-Maintenance Engine</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="maintenance-toggle" checked onchange="toggleMaintenance()">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                
+                <div class="maintenance-actions">
+                    <div class="maintenance-card" onclick="runMaintenance('health_check')">
+                        <div class="maintenance-icon"><i class="fas fa-heartbeat"></i></div>
+                        <div>Health Check</div>
+                    </div>
+                    <div class="maintenance-card" onclick="runMaintenance('error_recovery')">
+                        <div class="maintenance-icon"><i class="fas fa-band-aid"></i></div>
+                        <div>Error Recovery</div>
+                    </div>
+                    <div class="maintenance-card" onclick="runMaintenance('performance_tuning')">
+                        <div class="maintenance-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <div>Performance Tuning</div>
+                    </div>
+                    <div class="maintenance-card" onclick="runMaintenance('cost_optimization')">
+                        <div class="maintenance-icon"><i class="fas fa-coins"></i></div>
+                        <div>Cost Optimization</div>
+                    </div>
+                    <div class="maintenance-card" onclick="runMaintenance('cache_cleanup')">
+                        <div class="maintenance-icon"><i class="fas fa-broom"></i></div>
+                        <div>Cache Cleanup</div>
+                    </div>
+                    <div class="maintenance-card" onclick="runMaintenance('model_validation')">
+                        <div class="maintenance-icon"><i class="fas fa-check-circle"></i></div>
+                        <div>Model Validation</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px;">Maintenance Log</h3>
+                <div class="maintenance-log" id="maintenance-log">
+                    <div>Waiting for maintenance events...</div>
+                </div>
+            </div>
+
+            <!-- Telemetry Section -->
+            <div id="telemetry-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-chart-line"></i> Telemetry & Analytics</h2>
+                    <button class="btn btn-primary" onclick="exportTelemetry()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+                
+                <div class="telemetry-grid">
+                    <div class="telemetry-card">
+                        <h3>Response Times</h3>
+                        <div class="telemetry-chart">Response time chart</div>
+                    </div>
+                    <div class="telemetry-card">
+                        <h3>Success Rates</h3>
+                        <div class="telemetry-chart">Success rate chart</div>
+                    </div>
+                    <div class="telemetry-card">
+                        <h3>Error Distribution</h3>
+                        <div class="telemetry-chart">Error distribution chart</div>
+                    </div>
+                    <div class="telemetry-card">
+                        <h3>Cost Trends</h3>
+                        <div class="telemetry-chart">Cost trends chart</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Section -->
+            <div id="learning-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-brain"></i> Learning Analytics</h2>
+                </div>
+                
+                <div id="learning-stats">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading learning data...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Costs Section -->
+            <div id="costs-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-dollar-sign"></i> Cost Management</h2>
+                </div>
+                
+                <div id="cost-breakdown">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading cost data...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Framework Section -->
+            <div id="dynamic-framework-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-network-wired"></i> Dynamic Framework</h2>
+                    <button class="btn btn-primary" onclick="optimizeFramework()">
+                        <i class="fas fa-cogs"></i> Optimize System
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-server"></i></div>
+                        <div class="stat-value" id="framework-services">-</div>
+                        <div class="stat-label">Available Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
+                        <div class="stat-value" id="framework-health">-</div>
+                        <div class="stat-label">System Health</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-value" id="framework-savings">-</div>
+                        <div class="stat-label">Free Tier Savings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-route"></i></div>
+                        <div class="stat-value" id="framework-fallbacks">-</div>
+                        <div class="stat-label">Active Fallbacks</div>
+                    </div>
+                </div>
+
+                <div class="telemetry-grid">
+                    <div class="telemetry-card">
+                        <h3>Service Priority Ranking</h3>
+                        <div id="service-priority-chart" class="telemetry-chart">Loading service priorities...</div>
+                    </div>
+                    <div class="telemetry-card">
+                        <h3>Cost Optimization Strategy</h3>
+                        <div id="cost-strategy-display" class="telemetry-chart">Loading cost strategy...</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3>System Recommendations</h3>
+                    <div id="system-recommendations" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading recommendations...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Discovery Section -->
+            <div id="service-discovery-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-search"></i> Service Discovery</h2>
+                    <button class="btn btn-primary" onclick="runServiceDiscovery()">
+                        <i class="fas fa-sync"></i> Run Discovery
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-binoculars"></i></div>
+                        <div class="stat-value" id="discovered-services">-</div>
+                        <div class="stat-label">Discovered Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-value" id="validated-services">-</div>
+                        <div class="stat-label">Validated Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-gift"></i></div>
+                        <div class="stat-value" id="free-services">-</div>
+                        <div class="stat-label">Free Tier Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-value" id="last-discovery">-</div>
+                        <div class="stat-label">Last Discovery</div>
+                    </div>
+                </div>
+
+                <div id="discovered-services-list" style="margin-top: 30px;">
+                    <h3>Recently Discovered Services</h3>
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading discovered services...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fallback System Section -->
+            <div id="fallback-system-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-shield-alt"></i> Fallback System</h2>
+                    <button class="btn btn-warning" onclick="testFallbackSystem()">
+                        <i class="fas fa-vial"></i> Test Fallbacks
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
+                        <div class="stat-value" id="fallback-routes">-</div>
+                        <div class="stat-label">Fallback Routes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-value" id="circuit-breakers">-</div>
+                        <div class="stat-label">Circuit Breakers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-redo"></i></div>
+                        <div class="stat-value" id="fallback-executions">-</div>
+                        <div class="stat-label">Fallback Executions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                        <div class="stat-value" id="fallback-success-rate">-</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>Circuit Breaker Status</h3>
+                    <div id="circuit-breaker-status" style="display: grid; gap: 15px;">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading circuit breaker status...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Independent Core Section -->
+            <div id="independent-core-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-microchip"></i> Independent Core</h2>
+                    <button class="btn btn-success" onclick="testIndependentCore()">
+                        <i class="fas fa-check"></i> Test Core
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+                        <div class="stat-value" id="core-capabilities">-</div>
+                        <div class="stat-label">Core Capabilities</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                        <div class="stat-value" id="core-requests">-</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-stopwatch"></i></div>
+                        <div class="stat-value" id="core-avg-time">-</div>
+                        <div class="stat-label">Avg Processing Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div class="stat-value" id="core-independence">-</div>
+                        <div class="stat-label">Independence Level</div>
+                    </div>
+                </div>
+
+                <div class="maintenance-actions" style="margin-top: 30px;">
+                    <div class="maintenance-card" onclick="testCoreCapability('text_processing')">
+                        <div class="maintenance-icon"><i class="fas fa-file-alt"></i></div>
+                        <div>Text Processing</div>
+                    </div>
+                    <div class="maintenance-card" onclick="testCoreCapability('text_generation')">
+                        <div class="maintenance-icon"><i class="fas fa-pen"></i></div>
+                        <div>Text Generation</div>
+                    </div>
+                    <div class="maintenance-card" onclick="testCoreCapability('prompt_optimization')">
+                        <div class="maintenance-icon"><i class="fas fa-magic"></i></div>
+                        <div>Prompt Optimization</div>
+                    </div>
+                    <div class="maintenance-card" onclick="testCoreCapability('data_analysis')">
+                        <div class="maintenance-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div>Data Analysis</div>
+                    </div>
+                    <div class="maintenance-card" onclick="testCoreCapability('mock_generation')">
+                        <div class="maintenance-icon"><i class="fas fa-cube"></i></div>
+                        <div>Mock Generation</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notification-panel"></div>
+
+    <!-- Add Key Modal -->
+    <div class="modal" id="add-key-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add API Key</h2>
+                <span class="modal-close" onclick="closeModal('add-key-modal')">&times;</span>
+            </div>
+            <form id="add-key-form">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">Integration Type</label>
+                    <select class="form-input" id="modal-integration" style="width: 100%;">
+                        <option value="claude">Claude (Anthropic)</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="stable_diffusion">Stable Diffusion</option>
+                        <option value="replicate">Replicate</option>
+                        <option value="runway">Runway ML</option>
+                        <option value="midjourney">Midjourney</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">API Key</label>
+                    <input type="password" class="form-input" id="modal-api-key" placeholder="Enter API key" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">Base URL (optional)</label>
+                    <input type="text" class="form-input" id="modal-base-url" placeholder="Leave blank for default" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">Models (comma separated)</label>
+                    <input type="text" class="form-input" id="modal-models" placeholder="e.g., gpt-4, gpt-3.5-turbo" style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-key-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Key
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentSection = 'overview';
+        let maintenanceEngine = null;
+        let notificationQueue = [];
+
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                switchSection(section);
+            });
+        });
+
+        function switchSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.content-section').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`${section}-section`).classList.remove('hidden');
+
+            currentSection = section;
+            loadSectionData(section);
+        }
+
+        async function loadSectionData(section) {
+            switch (section) {
+                case 'overview':
+                    await loadOverview();
+                    break;
+                case 'api-keys':
+                    await loadAPIKeys();
+                    break;
+                case 'integrations':
+                    await loadIntegrations();
+                    break;
+                case 'maintenance':
+                    await loadMaintenanceStatus();
+                    break;
+                case 'telemetry':
+                    await loadTelemetry();
+                    break;
+                case 'learning':
+                    await loadLearningData();
+                    break;
+                case 'costs':
+                    await loadCostData();
+                    break;
+                case 'dynamic-framework':
+                    await loadDynamicFramework();
+                    break;
+                case 'service-discovery':
+                    await loadServiceDiscovery();
+                    break;
+                case 'fallback-system':
+                    await loadFallbackSystem();
+                    break;
+                case 'independent-core':
+                    await loadIndependentCore();
+                    break;
+            }
+        }
+
+        // Overview functions
+        async function loadOverview() {
+            try {
+                // Load integration dashboard data
+                const response = await fetch('/api/integration-dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const dashboard = data.dashboard_data;
+                    
+                    // Count active integrations
+                    const activeCount = Object.values(dashboard.integrations)
+                        .filter(i => i.status === 'healthy' || i.status === 'warning').length;
+                    
+                    document.getElementById('active-integrations').textContent = activeCount;
+                    document.getElementById('api-calls-today').textContent = dashboard.total_requests_today;
+                    document.getElementById('cost-today').textContent = `$${dashboard.total_cost_today.toFixed(2)}`;
+                    document.getElementById('patterns-learned').textContent = dashboard.learning_stats.patterns_learned;
+                }
+
+                // Load system health
+                await updateSystemHealth();
+                
+            } catch (error) {
+                console.error('Failed to load overview:', error);
+                showNotification('Failed to load overview data', 'error');
+            }
+        }
+
+        async function updateSystemHealth() {
+            try {
+                const response = await fetch('/api/system-health');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const health = data.health;
+                    const indicator = document.getElementById('health-indicator');
+                    const status = document.getElementById('health-status');
+                    
+                    // Update indicator color
+                    indicator.classList.remove('warning', 'critical');
+                    if (health.status === 'degraded') {
+                        indicator.classList.add('warning');
+                    } else if (health.status === 'critical') {
+                        indicator.classList.add('critical');
+                    }
+                    
+                    // Update status text
+                    status.textContent = `${health.status.toUpperCase()} (${Math.round(health.health_score)}%)`;
+                }
+            } catch (error) {
+                console.error('Failed to update system health:', error);
+            }
+        }
+
+        // API Key Management
+        async function loadAPIKeys() {
+            try {
+                const response = await fetch('/api/api-keys');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAPIKeys(data.keys);
+                }
+            } catch (error) {
+                console.error('Failed to load API keys:', error);
+                showNotification('Failed to load API keys', 'error');
+            }
+        }
+
+        function displayAPIKeys(keys) {
+            const container = document.getElementById('api-key-list');
+            container.innerHTML = '';
+            
+            if (Object.keys(keys).length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">No API keys configured. Click "Add New Key" to get started.</div>';
+                return;
+            }
+            
+            Object.entries(keys).forEach(([name, keyInfo]) => {
+                const item = document.createElement('div');
+                item.className = 'api-key-item';
+                
+                item.innerHTML = `
+                    <div class="api-key-name">${name.toUpperCase()}</div>
+                    <div class="api-key-info">
+                        <div class="key-preview">${keyInfo.key_preview}</div>
+                        <div class="key-status ${keyInfo.validation_status}">
+                            <i class="fas fa-circle"></i> ${keyInfo.validation_status}
+                        </div>
+                        <div style="font-size: 12px; color: #666;">
+                            Added: ${new Date(keyInfo.added_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="key-actions">
+                        <button class="btn btn-primary btn-sm" onclick="testAPIKey('${name}')">
+                            <i class="fas fa-check"></i> Test
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="toggleKey('${name}', ${!keyInfo.enabled})">
+                            <i class="fas fa-${keyInfo.enabled ? 'pause' : 'play'}"></i> 
+                            ${keyInfo.enabled ? 'Disable' : 'Enable'}
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="removeKey('${name}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function showAddKeyModal() {
+            document.getElementById('add-key-modal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.getElementById('add-key-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const integration = document.getElementById('modal-integration').value;
+            const apiKey = document.getElementById('modal-api-key').value;
+            const baseUrl = document.getElementById('modal-base-url').value;
+            const models = document.getElementById('modal-models').value
+                .split(',')
+                .map(m => m.trim())
+                .filter(m => m);
+            
+            try {
+                const response = await fetch('/api/api-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        integration_name: integration,
+                        api_key: apiKey,
+                        base_url: baseUrl || undefined,
+                        models: models.length > 0 ? models : undefined
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`API key for ${integration} added successfully`, 'success');
+                    closeModal('add-key-modal');
+                    document.getElementById('add-key-form').reset();
+                    await loadAPIKeys();
+                } else {
+                    showNotification(result.error || 'Failed to add API key', 'error');
+                }
+                
+            } catch (error) {
+                showNotification('Error adding API key', 'error');
+            }
+        });
+
+        async function testAPIKey(integration) {
+            try {
+                showNotification(`Testing ${integration} API key...`, 'info');
+                
+                const response = await fetch(`/api/api-keys/${integration}/test`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.validation.valid) {
+                    showNotification(`${integration} API key is valid!`, 'success');
+                } else {
+                    showNotification(`${integration} API key validation failed: ${result.validation.error}`, 'error');
+                }
+                
+                // Reload to show updated status
+                await loadAPIKeys();
+                
+            } catch (error) {
+                showNotification(`Failed to test ${integration} API key`, 'error');
+            }
+        }
+
+        async function toggleKey(integration, enable) {
+            try {
+                const response = await fetch(`/api/api-keys/${integration}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: enable })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${integration} ${enable ? 'enabled' : 'disabled'}`, 'success');
+                    await loadAPIKeys();
+                }
+                
+            } catch (error) {
+                showNotification(`Failed to toggle ${integration}`, 'error');
+            }
+        }
+
+        async function removeKey(integration) {
+            if (!confirm(`Remove API key for ${integration}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/api-keys/${integration}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${integration} API key removed`, 'success');
+                    await loadAPIKeys();
+                }
+                
+            } catch (error) {
+                showNotification(`Failed to remove ${integration} API key`, 'error');
+            }
+        }
+
+        // Maintenance functions
+        async function loadMaintenanceStatus() {
+            try {
+                const response = await fetch('/api/maintenance-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateMaintenanceLog(data.recent_events);
+                }
+            } catch (error) {
+                console.error('Failed to load maintenance status:', error);
+            }
+        }
+
+        function updateMaintenanceLog(events) {
+            const log = document.getElementById('maintenance-log');
+            log.innerHTML = '';
+            
+            if (events.length === 0) {
+                log.innerHTML = '<div>No recent maintenance events</div>';
+                return;
+            }
+            
+            events.forEach(event => {
+                const entry = document.createElement('div');
+                entry.style.marginBottom = '5px';
+                entry.innerHTML = `
+                    <span style="color: #95a5a6;">${new Date(event.timestamp).toLocaleTimeString()}</span>
+                    <span style="color: #3498db;">[${event.action}]</span>
+                    ${event.target} - ${event.status}
+                `;
+                log.appendChild(entry);
+            });
+        }
+
+        async function runMaintenance(action) {
+            try {
+                showNotification(`Running ${action.replace('_', ' ')}...`, 'info');
+                
+                const response = await fetch('/api/maintenance/trigger', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: action })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${action.replace('_', ' ')} completed in ${result.duration.toFixed(2)}s`, 'success');
+                    await loadMaintenanceStatus();
+                } else {
+                    showNotification(`${action.replace('_', ' ')} failed: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showNotification(`Failed to run ${action.replace('_', ' ')}`, 'error');
+            }
+        }
+
+        async function toggleMaintenance() {
+            const enabled = document.getElementById('maintenance-toggle').checked;
+            
+            try {
+                const response = await fetch('/api/maintenance/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: enabled })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Auto-maintenance ${enabled ? 'enabled' : 'disabled'}`, 'success');
+                }
+                
+            } catch (error) {
+                showNotification('Failed to toggle maintenance', 'error');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const panel = document.getElementById('notification-panel');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>${message}</div>
+                    <span style="cursor: pointer;" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                </div>
+            `;
+            
+            panel.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Other functions
+        async function refreshOverview() {
+            showNotification('Refreshing overview...', 'info');
+            await loadOverview();
+        }
+
+        async function testAllIntegrations() {
+            showNotification('Testing all integrations...', 'info');
+            
+            try {
+                const response = await fetch('/api/integration-test-all', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('All integration tests completed', 'success');
+                    await loadIntegrations();
+                }
+                
+            } catch (error) {
+                showNotification('Integration tests failed', 'error');
+            }
+        }
+
+        async function loadIntegrations() {
+            try {
+                const response = await fetch('/api/integration-dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayIntegrations(data.dashboard_data.integrations);
+                }
+            } catch (error) {
+                console.error('Failed to load integrations:', error);
+            }
+        }
+
+        function displayIntegrations(integrations) {
+            const container = document.getElementById('integrations-grid');
+            container.innerHTML = '';
+            
+            // Define service types
+            const serviceTypes = {
+                'claude': 'chatbot',
+                'openai': 'chatbot',
+                'cohere': 'chatbot',
+                'llama': 'chatbot',
+                'stable_diffusion': 'simulator',
+                'dalle': 'simulator',
+                'midjourney': 'simulator',
+                'runway': 'simulator',
+                'elevenlabs': 'simulator',
+                'sora': 'simulator',
+                'replicate': 'both',
+                'huggingface': 'both'
+            };
+            
+            Object.entries(integrations).forEach(([name, data]) => {
+                const serviceType = serviceTypes[name.toLowerCase()] || 'unknown';
+                const card = document.createElement('div');
+                card.className = `integration-card ${serviceType}`;
+                
+                card.innerHTML = `
+                    <div class="integration-header">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="integration-type-icon ${serviceType}-icon">
+                                    ${serviceType === 'chatbot' ? '💬' : serviceType === 'simulator' ? '🎨' : '🔄'}
+                                </span>
+                                <div class="integration-title">${name.toUpperCase()}</div>
+                            </div>
+                            <div class="status-badge status-${data.status}">
+                                ${data.status}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Requests Today:</span>
+                        <span class="metric-value">${data.metrics.requests_count}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Success Rate:</span>
+                        <span class="metric-value">${data.metrics.success_rate.toFixed(1)}%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Response:</span>
+                        <span class="metric-value">${data.metrics.avg_response_time.toFixed(2)}s</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Cost Today:</span>
+                        <span class="metric-value">$${data.metrics.cost_incurred.toFixed(2)}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Budget Usage:</span>
+                        <span class="metric-value">${(data.budget_usage * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        async function loadTelemetry() {
+            try {
+                const response = await fetch('/api/telemetry-export');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update telemetry displays
+                    console.log('Telemetry data:', data.telemetry);
+                }
+            } catch (error) {
+                console.error('Failed to load telemetry:', error);
+            }
+        }
+
+        async function exportTelemetry() {
+            showNotification('Exporting telemetry data...', 'info');
+            
+            try {
+                const response = await fetch('/api/telemetry-export', {
+                    method: 'POST'
+                });
+                
+                const data = await response.blob();
+                
+                // Download the exported data
+                const url = window.URL.createObjectURL(data);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `telemetry_export_${new Date().toISOString()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                showNotification('Telemetry data exported', 'success');
+                
+            } catch (error) {
+                showNotification('Failed to export telemetry', 'error');
+            }
+        }
+
+        async function loadLearningData() {
+            try {
+                const response = await fetch('/api/integration-dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.dashboard_data.learning_stats;
+                    
+                    const container = document.getElementById('learning-stats');
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-value">${stats.patterns_learned}</div>
+                                <div class="stat-label">Patterns Learned</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats.interactions_recorded}</div>
+                                <div class="stat-label">Interactions Recorded</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${(stats.avg_confidence * 100).toFixed(1)}%</div>
+                                <div class="stat-label">Average Confidence</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${(stats.learning_efficiency * 100).toFixed(1)}%</div>
+                                <div class="stat-label">Learning Efficiency</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load learning data:', error);
+            }
+        }
+
+        async function loadCostData() {
+            try {
+                const response = await fetch('/api/cost-tracking');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const costs = data.costs;
+                    
+                    const container = document.getElementById('cost-breakdown');
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div class="cost-item">
+                                <div class="cost-amount">$${costs.spent_today.toFixed(2)}</div>
+                                <div class="cost-period">Spent Today</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-amount">$${costs.remaining_budget.toFixed(2)}</div>
+                                <div class="cost-period">Remaining Budget</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-amount">${costs.usage_percentage.toFixed(1)}%</div>
+                                <div class="cost-period">Budget Used</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-amount">${costs.current_strategy}</div>
+                                <div class="cost-period">Current Strategy</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load cost data:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOverview();
+            
+            // Set up auto-refresh
+            setInterval(() => {
+                if (currentSection === 'overview') {
+                    updateSystemHealth();
+                }
+            }, 30000);
+            
+            // Set up WebSocket for real-time notifications (if implemented)
+            // connectWebSocket();
+        });
+
+        // Dynamic Framework Functions
+        async function loadDynamicFramework() {
+            try {
+                const response = await fetch('/api/unified-system-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const framework = data.system_status.framework;
+                    
+                    document.getElementById('framework-services').textContent = framework.services ? Object.keys(framework.services).length : 0;
+                    document.getElementById('framework-health').textContent = `${Math.round(data.system_status.health.overall_score * 100)}%`;
+                    document.getElementById('framework-savings').textContent = `$${(framework.free_tier_status?.total_savings || 0).toFixed(2)}`;
+                    document.getElementById('framework-fallbacks').textContent = Object.keys(data.system_status.fallback.active_routes || {}).length;
+                    
+                    // Load service priority chart
+                    displayServicePriorities(framework.services);
+                    
+                    // Load cost strategy
+                    displayCostStrategy(data.system_status.costs.current_strategy);
+                    
+                    // Load recommendations
+                    loadSystemRecommendations();
+                }
+            } catch (error) {
+                console.error('Failed to load dynamic framework:', error);
+                showNotification('Failed to load dynamic framework data', 'error');
+            }
+        }
+
+        function displayServicePriorities(services) {
+            const container = document.getElementById('service-priority-chart');
+            if (!services) {
+                container.innerHTML = 'No services available';
+                return;
+            }
+            
+            const sortedServices = Object.entries(services).sort((a, b) => b[1].success_rate - a[1].success_rate);
+            
+            let html = '<div style="display: grid; gap: 10px;">';
+            sortedServices.slice(0, 5).forEach(([name, data], index) => {
+                const priority = index + 1;
+                const healthColor = data.status === 'active' ? '#27ae60' : '#e74c3c';
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <span><strong>#${priority}</strong> ${name.toUpperCase()}</span>
+                        <span style="color: ${healthColor};">${data.success_rate.toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        function displayCostStrategy(strategy) {
+            const container = document.getElementById('cost-strategy-display');
+            const strategies = {
+                'free_tier_first': { name: 'Free Tier First', color: '#27ae60', description: 'Prioritizing free services' },
+                'lowest_cost': { name: 'Lowest Cost', color: '#3498db', description: 'Minimizing expenses' },
+                'balanced': { name: 'Balanced', color: '#f39c12', description: 'Balancing cost and quality' },
+                'quality_first': { name: 'Quality First', color: '#9b59b6', description: 'Prioritizing quality' }
+            };
+            
+            const strategyInfo = strategies[strategy] || { name: 'Unknown', color: '#95a5a6', description: 'Strategy not recognized' };
+            
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: ${strategyInfo.color}; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        ${strategyInfo.name.charAt(0)}
+                    </div>
+                    <h4>${strategyInfo.name}</h4>
+                    <p style="color: #666; font-size: 14px;">${strategyInfo.description}</p>
+                </div>
+            `;
+        }
+
+        async function loadSystemRecommendations() {
+            try {
+                const response = await fetch('/api/system-recommendations');
+                const data = await response.json();
+                
+                const container = document.getElementById('system-recommendations');
+                
+                if (data.success && data.recommendations.length > 0) {
+                    let html = '<ul style="margin: 0; padding-left: 20px;">';
+                    data.recommendations.forEach(rec => {
+                        html += `<li style="margin-bottom: 10px;">${rec}</li>`;
+                    });
+                    html += '</ul>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="color: #27ae60; text-align: center; margin: 0;"><i class="fas fa-check-circle"></i> System is optimally configured!</p>';
+                }
+            } catch (error) {
+                document.getElementById('system-recommendations').innerHTML = '<p style="color: #e74c3c;">Failed to load recommendations</p>';
+            }
+        }
+
+        async function optimizeFramework() {
+            showNotification('Running system optimization...', 'info');
+            
+            try {
+                const response = await fetch('/api/optimize-system', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('System optimization completed successfully', 'success');
+                    await loadDynamicFramework();
+                } else {
+                    showNotification('System optimization failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Failed to run system optimization', 'error');
+            }
+        }
+
+        // Service Discovery Functions
+        async function loadServiceDiscovery() {
+            try {
+                const response = await fetch('/api/service-discovery-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const discovery = data.discovery_status;
+                    
+                    document.getElementById('discovered-services').textContent = discovery.total_discovered || 0;
+                    document.getElementById('validated-services').textContent = discovery.validated_services || 0;
+                    document.getElementById('free-services').textContent = discovery.free_tier_services || 0;
+                    document.getElementById('last-discovery').textContent = discovery.last_run ? new Date(discovery.last_run).toLocaleTimeString() : 'Never';
+                    
+                    displayDiscoveredServices(discovery.recent_discoveries);
+                }
+            } catch (error) {
+                console.error('Failed to load service discovery:', error);
+                showNotification('Failed to load service discovery data', 'error');
+            }
+        }
+
+        function displayDiscoveredServices(services) {
+            const container = document.getElementById('discovered-services-list');
+            
+            if (!services || services.length === 0) {
+                container.innerHTML = '<h3>Recently Discovered Services</h3><p>No recently discovered services</p>';
+                return;
+            }
+            
+            let html = '<h3>Recently Discovered Services</h3><div style="display: grid; gap: 15px;">';
+            
+            services.slice(0, 5).forEach(service => {
+                const statusColor = service.validation_status === 'validated' ? '#27ae60' : '#f39c12';
+                html += `
+                    <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong>${service.name}</strong>
+                            <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                ${service.validation_status}
+                            </span>
+                        </div>
+                        <div style="font-size: 14px; color: #666;">
+                            <div>Provider: ${service.provider}</div>
+                            <div>Capabilities: ${service.capabilities.join(', ')}</div>
+                            <div>Discovered: ${new Date(service.discovered_at).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function runServiceDiscovery() {
+            showNotification('Running service discovery...', 'info');
+            
+            try {
+                const response = await fetch('/api/run-service-discovery', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Service discovery completed. Found ${result.discovered_count} new services`, 'success');
+                    await loadServiceDiscovery();
+                } else {
+                    showNotification('Service discovery failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Failed to run service discovery', 'error');
+            }
+        }
+
+        // Fallback System Functions
+        async function loadFallbackSystem() {
+            try {
+                const response = await fetch('/api/fallback-system-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const fallback = data.fallback_status;
+                    
+                    document.getElementById('fallback-routes').textContent = Object.keys(fallback.routes || {}).length;
+                    document.getElementById('circuit-breakers').textContent = fallback.active_circuit_breakers?.length || 0;
+                    document.getElementById('fallback-executions').textContent = fallback.total_executions || 0;
+                    document.getElementById('fallback-success-rate').textContent = `${(fallback.success_rate * 100).toFixed(1)}%`;
+                    
+                    displayCircuitBreakerStatus(fallback.circuit_breaker_status);
+                }
+            } catch (error) {
+                console.error('Failed to load fallback system:', error);
+                showNotification('Failed to load fallback system data', 'error');
+            }
+        }
+
+        function displayCircuitBreakerStatus(circuitBreakers) {
+            const container = document.getElementById('circuit-breaker-status');
+            
+            if (!circuitBreakers || Object.keys(circuitBreakers).length === 0) {
+                container.innerHTML = '<p>No circuit breakers configured</p>';
+                return;
+            }
+            
+            let html = '';
+            Object.entries(circuitBreakers).forEach(([service, status]) => {
+                const stateColor = {
+                    'closed': '#27ae60',
+                    'open': '#e74c3c',
+                    'half-open': '#f39c12'
+                }[status.state] || '#95a5a6';
+                
+                html += `
+                    <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>${service}</strong>
+                            <span style="background: ${stateColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                ${status.state.toUpperCase()}
+                            </span>
+                        </div>
+                        <div style="font-size: 14px; color: #666; margin-top: 8px;">
+                            Failures: ${status.failure_count} | Last failure: ${status.last_failure ? new Date(status.last_failure).toLocaleString() : 'None'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        async function testFallbackSystem() {
+            showNotification('Testing fallback system...', 'info');
+            
+            try {
+                const response = await fetch('/api/test-fallback-system', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Fallback system test completed. ${result.tests_passed}/${result.total_tests} tests passed`, 
+                                   result.tests_passed === result.total_tests ? 'success' : 'warning');
+                    await loadFallbackSystem();
+                } else {
+                    showNotification('Fallback system test failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Failed to test fallback system', 'error');
+            }
+        }
+
+        // Independent Core Functions
+        async function loadIndependentCore() {
+            try {
+                const response = await fetch('/api/independent-core-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const core = data.core_status;
+                    
+                    document.getElementById('core-capabilities').textContent = core.available_capabilities?.length || 0;
+                    document.getElementById('core-requests').textContent = core.total_requests || 0;
+                    document.getElementById('core-avg-time').textContent = `${(core.average_processing_time * 1000).toFixed(0)}ms`;
+                    document.getElementById('core-independence').textContent = core.dependencies === 'None' ? '100%' : '90%';
+                }
+            } catch (error) {
+                console.error('Failed to load independent core:', error);
+                showNotification('Failed to load independent core data', 'error');
+            }
+        }
+
+        async function testIndependentCore() {
+            showNotification('Testing independent core capabilities...', 'info');
+            
+            try {
+                const response = await fetch('/api/test-independent-core', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Independent core test completed. ${result.healthy_capabilities}/${result.capabilities_tested} capabilities healthy`, 'success');
+                    await loadIndependentCore();
+                } else {
+                    showNotification('Independent core test failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Failed to test independent core', 'error');
+            }
+        }
+
+        async function testCoreCapability(capability) {
+            showNotification(`Testing ${capability} capability...`, 'info');
+            
+            try {
+                const response = await fetch('/api/test-core-capability', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ capability: capability })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${capability} capability test passed in ${result.processing_time.toFixed(2)}s`, 'success');
+                } else {
+                    showNotification(`${capability} capability test failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Failed to test ${capability} capability`, 'error');
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K for quick search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                // Implement quick search
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Management - AI Platform</title>
+    
+    <!-- Enhanced CSS Framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .integrations-layout {
+            min-height: 100vh;
+            background: var(--bg-secondary);
+        }
+        
+        .integrations-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-8);
+            padding: var(--space-6);
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .header-info h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .stat-item {
+            padding: var(--space-6);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            text-align: center;
+            transition: all var(--transition-base);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .filters-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--space-6);
+            overflow: hidden;
+        }
+        
+        .filters-header {
+            padding: var(--space-4) var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .filters-content {
+            padding: var(--space-6);
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .filter-select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            font-size: 0.875rem;
+        }
+        
+        .search-box {
+            flex: 1;
+            max-width: 300px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+        }
+        
+        .integrations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: var(--space-6);
+        }
+        
+        .integration-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            transition: all var(--transition-base);
+            position: relative;
+        }
+        
+        .integration-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .integration-card.status-healthy {
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .integration-card.status-warning {
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .integration-card.status-error {
+            border-left: 4px solid var(--error-color);
+        }
+        
+        .integration-card.status-inactive {
+            border-left: 4px solid var(--gray-400);
+            opacity: 0.7;
+        }
+        
+        .card-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .service-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .service-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+        
+        .service-details h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .service-type {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .last-tested {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+        
+        .card-metrics {
+            padding: var(--space-6);
+            background: var(--bg-secondary);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .usage-bar {
+            margin-top: var(--space-4);
+        }
+        
+        .usage-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .card-actions {
+            padding: var(--space-4) var(--space-6);
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            gap: var(--space-2);
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .config-button {
+            padding: var(--space-2);
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .config-button:hover {
+            background: var(--gray-300);
+            color: var(--text-primary);
+        }
+        
+        .integration-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .integration-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--success-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--space-16);
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto var(--space-6);
+            color: var(--text-tertiary);
+        }
+        
+        .floating-add-button {
+            position: fixed;
+            bottom: var(--space-8);
+            right: var(--space-8);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            z-index: 1000;
+        }
+        
+        .floating-add-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .bulk-actions {
+            padding: var(--space-4) var(--space-6);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--space-6);
+            display: none;
+        }
+        
+        .bulk-actions.show {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .selected-count {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .integrations-container {
+                padding: var(--space-4);
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: var(--space-4);
+                text-align: center;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filters-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: none;
+            }
+            
+            .integrations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .card-actions {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="integrations-layout">
+        <div class="integrations-container">
+            <!-- Page Header -->
+            <header class="page-header">
+                <div class="header-info">
+                    <h1>Integration Management</h1>
+                    <p class="header-subtitle">Monitor and manage all your AI service integrations</p>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-ghost" onclick="refreshAllIntegrations()" data-tooltip="Refresh all">
+                        <span>🔄</span>
+                        <span class="hidden sm:inline">Refresh</span>
+                    </button>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-secondary" data-dropdown-trigger>
+                            <span>📊</span>
+                            <span>Export</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item" onclick="exportData('csv')">
+                                <span>📄</span>
+                                <span>Export as CSV</span>
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="exportData('json')">
+                                <span>📋</span>
+                                <span>Export as JSON</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="window.location.href='/enhanced-quickstart'">
+                        <span>➕</span>
+                        <span>Add Integration</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-integrations">-</div>
+                    <div class="stat-label">Total Integrations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="active-integrations">-</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-requests">-</div>
+                    <div class="stat-label">Requests Today</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-cost">-</div>
+                    <div class="stat-label">Daily Cost</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-response-time">-</div>
+                    <div class="stat-label">Avg Response</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="success-rate">-</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <section class="filters-section">
+                <div class="filters-header">
+                    <h3 class="font-semibold">Filters & Search</h3>
+                    <button class="btn btn-ghost btn-xs" onclick="clearFilters()">Clear All</button>
+                </div>
+                <div class="filters-content">
+                    <div class="filter-group">
+                        <label for="status-filter" class="text-sm font-medium">Status:</label>
+                        <select id="status-filter" class="filter-select" onchange="filterIntegrations()">
+                            <option value="">All</option>
+                            <option value="healthy">Healthy</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="type-filter" class="text-sm font-medium">Type:</label>
+                        <select id="type-filter" class="filter-select" onchange="filterIntegrations()">
+                            <option value="">All Types</option>
+                            <option value="chatbot">Text Generation</option>
+                            <option value="simulator">Media Generation</option>
+                            <option value="multimodal">Multi-Modal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="sort-filter" class="text-sm font-medium">Sort by:</label>
+                        <select id="sort-filter" class="filter-select" onchange="sortIntegrations()">
+                            <option value="name">Name</option>
+                            <option value="status">Status</option>
+                            <option value="requests">Requests</option>
+                            <option value="cost">Cost</option>
+                            <option value="response_time">Response Time</option>
+                        </select>
+                    </div>
+                    
+                    <div class="search-box">
+                        <div class="search-icon">🔍</div>
+                        <input 
+                            type="text" 
+                            class="search-input" 
+                            placeholder="Search integrations..." 
+                            id="search-input"
+                            oninput="searchIntegrations()"
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions" id="bulk-actions">
+                <div class="selected-count">
+                    <span id="selected-count">0</span> integrations selected
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary btn-sm" onclick="bulkTest()">
+                        <span>🧪</span>
+                        <span>Test Selected</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="bulkToggle()">
+                        <span>⏸️</span>
+                        <span>Toggle Selected</span>
+                    </button>
+                    <button class="btn btn-error btn-sm" onclick="bulkDelete()">
+                        <span>🗑️</span>
+                        <span>Delete Selected</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Integrations Grid -->
+            <div class="integrations-grid" id="integrations-grid">
+                <!-- Integration cards will be loaded here -->
+                <div class="loading-overlay">
+                    <div class="spinner-lg"></div>
+                    <p class="mt-4">Loading integrations...</p>
+                </div>
+            </div>
+
+            <!-- Floating Add Button -->
+            <button class="floating-add-button" onclick="window.location.href='/enhanced-quickstart'" data-tooltip="Add Integration">
+                <span style="font-size: 1.5rem;">➕</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript Framework -->
+    <script src="{{ url_for('static', filename='js/enhanced.js') }}"></script>
+    
+    <script>
+        class IntegrationManager {
+            constructor() {
+                this.integrations = [];
+                this.filteredIntegrations = [];
+                this.selectedIntegrations = new Set();
+                this.init();
+            }
+
+            init() {
+                this.loadIntegrations();
+                this.setupEventListeners();
+                this.startAutoRefresh();
+            }
+
+            setupEventListeners() {
+                // Search input debouncing
+                const searchInput = document.getElementById('search-input');
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => this.filterIntegrations(), 300);
+                });
+            }
+
+            async loadIntegrations() {
+                try {
+                    const response = await enhancedUI.request('/integration-dashboard');
+                    
+                    if (response.success) {
+                        this.integrations = this.transformIntegrationData(response.dashboard_data.integrations);
+                        this.filteredIntegrations = [...this.integrations];
+                        this.updateStats(response.dashboard_data);
+                        this.renderIntegrations();
+                    } else {
+                        this.showEmptyState();
+                    }
+                } catch (error) {
+                    console.error('Failed to load integrations:', error);
+                    this.showErrorState(error.message);
+                }
+            }
+
+            transformIntegrationData(rawIntegrations) {
+                return Object.entries(rawIntegrations).map(([name, data]) => ({
+                    name: name,
+                    displayName: this.getDisplayName(name),
+                    icon: this.getServiceIcon(name),
+                    type: this.getServiceType(name),
+                    status: data.status,
+                    metrics: data.metrics,
+                    budget_usage: data.budget_usage,
+                    last_tested: data.last_tested || new Date().toISOString(),
+                    enabled: data.enabled !== false
+                }));
+            }
+
+            getDisplayName(service) {
+                const names = {
+                    'openai': 'OpenAI',
+                    'claude': 'Anthropic Claude',
+                    'stable_diffusion': 'Stable Diffusion',
+                    'midjourney': 'Midjourney',
+                    'runway': 'RunwayML',
+                    'replicate': 'Replicate',
+                    'elevenlabs': 'ElevenLabs',
+                    'huggingface': 'Hugging Face'
+                };
+                return names[service.toLowerCase()] || service.toUpperCase();
+            }
+
+            getServiceIcon(service) {
+                const icons = {
+                    'openai': '🧠',
+                    'claude': '🤖',
+                    'stable_diffusion': '🎨',
+                    'midjourney': '🎭',
+                    'runway': '🎬',
+                    'replicate': '🔄',
+                    'elevenlabs': '🎵',
+                    'huggingface': '🤗'
+                };
+                return icons[service.toLowerCase()] || '🔌';
+            }
+
+            getServiceType(service) {
+                const types = {
+                    'openai': 'chatbot',
+                    'claude': 'chatbot',
+                    'stable_diffusion': 'simulator',
+                    'midjourney': 'simulator',
+                    'runway': 'simulator',
+                    'replicate': 'multimodal',
+                    'elevenlabs': 'simulator',
+                    'huggingface': 'multimodal'
+                };
+                return types[service.toLowerCase()] || 'unknown';
+            }
+
+            updateStats(data) {
+                const stats = {
+                    'total-integrations': this.integrations.length,
+                    'active-integrations': this.integrations.filter(i => i.status === 'healthy').length,
+                    'total-requests': data.total_requests_today || 0,
+                    'total-cost': `$${(data.total_cost_today || 0).toFixed(2)}`,
+                    'avg-response-time': `${this.calculateAvgResponseTime()}s`,
+                    'success-rate': `${this.calculateSuccessRate()}%`
+                };
+
+                Object.entries(stats).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        this.animateValue(element, value);
+                    }
+                });
+            }
+
+            calculateAvgResponseTime() {
+                if (this.integrations.length === 0) return '0.0';
+                const total = this.integrations.reduce((sum, i) => sum + i.metrics.avg_response_time, 0);
+                return (total / this.integrations.length).toFixed(1);
+            }
+
+            calculateSuccessRate() {
+                if (this.integrations.length === 0) return '0.0';
+                const total = this.integrations.reduce((sum, i) => sum + i.metrics.success_rate, 0);
+                return (total / this.integrations.length).toFixed(1);
+            }
+
+            animateValue(element, newValue) {
+                if (element.textContent !== newValue.toString()) {
+                    element.style.transition = 'all 0.3s ease';
+                    element.style.transform = 'scale(1.1)';
+                    
+                    setTimeout(() => {
+                        element.textContent = newValue;
+                        element.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+
+            renderIntegrations() {
+                const container = document.getElementById('integrations-grid');
+                
+                if (this.filteredIntegrations.length === 0) {
+                    this.showEmptyState();
+                    return;
+                }
+
+                const html = this.filteredIntegrations.map(integration => 
+                    this.createIntegrationCard(integration)
+                ).join('');
+
+                container.innerHTML = html;
+                
+                // Animate cards in
+                const cards = container.querySelectorAll('.integration-card');
+                cards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }
+
+            createIntegrationCard(integration) {
+                const statusConfig = this.getStatusConfig(integration.status);
+                const typeLabel = this.getTypeLabel(integration.type);
+                
+                return `
+                    <div class="integration-card status-${integration.status}" data-integration="${integration.name}">
+                        <div class="card-header">
+                            <div class="service-info">
+                                <div class="service-icon">${integration.icon}</div>
+                                <div class="service-details">
+                                    <h3>${integration.displayName}</h3>
+                                    <div class="service-type">${typeLabel}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="status-row">
+                                <div class="status-indicator" style="color: ${statusConfig.color}">
+                                    <div class="status-dot status-${integration.status} status-pulse"></div>
+                                    ${statusConfig.label}
+                                </div>
+                                <div class="last-tested">
+                                    Last tested: ${this.formatTimeAgo(integration.last_tested)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-metrics">
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <div class="metric-value">${integration.metrics.requests_count}</div>
+                                    <div class="metric-label">Requests</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${integration.metrics.success_rate.toFixed(1)}%</div>
+                                    <div class="metric-label">Success</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${integration.metrics.avg_response_time.toFixed(2)}s</div>
+                                    <div class="metric-label">Response</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">$${integration.metrics.cost_incurred.toFixed(2)}</div>
+                                    <div class="metric-label">Cost</div>
+                                </div>
+                            </div>
+                            
+                            <div class="usage-bar">
+                                <div class="usage-bar-label">
+                                    <span>Budget Usage</span>
+                                    <span>${(integration.budget_usage * 100).toFixed(1)}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${integration.budget_usage * 100}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-actions">
+                            <div class="action-buttons">
+                                <button class="config-button" onclick="testIntegration('${integration.name}')" data-tooltip="Test connection">
+                                    🧪
+                                </button>
+                                <button class="config-button" onclick="configureIntegration('${integration.name}')" data-tooltip="Configure">
+                                    ⚙️
+                                </button>
+                                <button class="config-button" onclick="viewMetrics('${integration.name}')" data-tooltip="View metrics">
+                                    📊
+                                </button>
+                                <button class="config-button" onclick="deleteIntegration('${integration.name}')" data-tooltip="Delete">
+                                    🗑️
+                                </button>
+                            </div>
+                            
+                            <label class="integration-toggle">
+                                <input type="checkbox" ${integration.enabled ? 'checked' : ''} 
+                                       onchange="toggleIntegration('${integration.name}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <input type="checkbox" class="sr-only integration-checkbox" 
+                               data-integration="${integration.name}"
+                               onchange="updateSelection()">
+                    </div>
+                `;
+            }
+
+            getStatusConfig(status) {
+                const configs = {
+                    'healthy': { color: 'var(--success-color)', label: 'Healthy' },
+                    'warning': { color: 'var(--warning-color)', label: 'Warning' },
+                    'error': { color: 'var(--error-color)', label: 'Error' },
+                    'inactive': { color: 'var(--gray-400)', label: 'Inactive' }
+                };
+                return configs[status] || configs['inactive'];
+            }
+
+            getTypeLabel(type) {
+                const labels = {
+                    'chatbot': 'Text Generation',
+                    'simulator': 'Media Generation',
+                    'multimodal': 'Multi-Modal'
+                };
+                return labels[type] || 'AI Service';
+            }
+
+            formatTimeAgo(timestamp) {
+                const now = new Date();
+                const time = new Date(timestamp);
+                const diffMs = now - time;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                if (diffHours < 24) return `${diffHours}h ago`;
+                return `${diffDays}d ago`;
+            }
+
+            showEmptyState() {
+                const container = document.getElementById('integrations-grid');
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">🔌</div>
+                        <h3 class="text-xl font-semibold mb-4">No Integrations Found</h3>
+                        <p class="text-secondary mb-6">Get started by adding your first AI service integration</p>
+                        <a href="/enhanced-quickstart" class="btn btn-primary">
+                            <span>🚀</span>
+                            <span>Add Your First Integration</span>
+                        </a>
+                    </div>
+                `;
+            }
+
+            showErrorState(message) {
+                const container = document.getElementById('integrations-grid');
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">❌</div>
+                        <h3 class="text-xl font-semibold mb-4">Failed to Load Integrations</h3>
+                        <p class="text-secondary mb-6">${message}</p>
+                        <button class="btn btn-primary" onclick="integrationManager.loadIntegrations()">
+                            <span>🔄</span>
+                            <span>Retry</span>
+                        </button>
+                    </div>
+                `;
+            }
+
+            filterIntegrations() {
+                const statusFilter = document.getElementById('status-filter').value;
+                const typeFilter = document.getElementById('type-filter').value;
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+                this.filteredIntegrations = this.integrations.filter(integration => {
+                    const matchesStatus = !statusFilter || integration.status === statusFilter;
+                    const matchesType = !typeFilter || integration.type === typeFilter;
+                    const matchesSearch = !searchTerm || 
+                        integration.displayName.toLowerCase().includes(searchTerm) ||
+                        integration.name.toLowerCase().includes(searchTerm);
+
+                    return matchesStatus && matchesType && matchesSearch;
+                });
+
+                this.sortIntegrations();
+                this.renderIntegrations();
+            }
+
+            sortIntegrations() {
+                const sortBy = document.getElementById('sort-filter').value;
+                
+                this.filteredIntegrations.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'name':
+                            return a.displayName.localeCompare(b.displayName);
+                        case 'status':
+                            const statusOrder = { 'healthy': 0, 'warning': 1, 'error': 2, 'inactive': 3 };
+                            return statusOrder[a.status] - statusOrder[b.status];
+                        case 'requests':
+                            return b.metrics.requests_count - a.metrics.requests_count;
+                        case 'cost':
+                            return b.metrics.cost_incurred - a.metrics.cost_incurred;
+                        case 'response_time':
+                            return a.metrics.avg_response_time - b.metrics.avg_response_time;
+                        default:
+                            return 0;
+                    }
+                });
+            }
+
+            clearFilters() {
+                document.getElementById('status-filter').value = '';
+                document.getElementById('type-filter').value = '';
+                document.getElementById('search-input').value = '';
+                this.filterIntegrations();
+            }
+
+            updateSelection() {
+                const checkboxes = document.querySelectorAll('.integration-checkbox');
+                this.selectedIntegrations.clear();
+                
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        this.selectedIntegrations.add(checkbox.getAttribute('data-integration'));
+                    }
+                });
+
+                const bulkActions = document.getElementById('bulk-actions');
+                const selectedCount = document.getElementById('selected-count');
+                
+                if (this.selectedIntegrations.size > 0) {
+                    bulkActions.classList.add('show');
+                    selectedCount.textContent = this.selectedIntegrations.size;
+                } else {
+                    bulkActions.classList.remove('show');
+                }
+            }
+
+            startAutoRefresh() {
+                // Refresh every 2 minutes
+                setInterval(() => {
+                    this.loadIntegrations();
+                }, 120000);
+            }
+
+            async refreshAll() {
+                enhancedUI.showToast('Refreshing all integrations...', 'info');
+                await this.loadIntegrations();
+                enhancedUI.showToast('Integrations refreshed', 'success', 2000);
+            }
+        }
+
+        // Global functions for button actions
+        async function testIntegration(integrationName) {
+            enhancedUI.showToast(`Testing ${integrationName}...`, 'info');
+            
+            try {
+                const response = await enhancedUI.request(`/test-integration/${integrationName}`, {
+                    method: 'POST'
+                });
+                
+                if (response.success) {
+                    enhancedUI.showToast(`${integrationName} test successful! ✅`, 'success');
+                    await integrationManager.loadIntegrations();
+                } else {
+                    enhancedUI.showToast(`${integrationName} test failed: ${response.error}`, 'error');
+                }
+            } catch (error) {
+                enhancedUI.showToast(`Failed to test ${integrationName}`, 'error');
+            }
+        }
+
+        function configureIntegration(integrationName) {
+            // Open configuration modal or redirect to config page
+            enhancedUI.showToast('Configuration modal coming soon...', 'info');
+        }
+
+        function viewMetrics(integrationName) {
+            // Open detailed metrics view
+            enhancedUI.showToast('Detailed metrics view coming soon...', 'info');
+        }
+
+        async function deleteIntegration(integrationName) {
+            if (!confirm(`Are you sure you want to delete the ${integrationName} integration?`)) {
+                return;
+            }
+
+            enhancedUI.showToast(`Deleting ${integrationName}...`, 'info');
+            
+            try {
+                const response = await enhancedUI.request(`/api-keys/${integrationName}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.success) {
+                    enhancedUI.showToast(`${integrationName} deleted successfully`, 'success');
+                    await integrationManager.loadIntegrations();
+                } else {
+                    enhancedUI.showToast(`Failed to delete ${integrationName}`, 'error');
+                }
+            } catch (error) {
+                enhancedUI.showToast(`Error deleting ${integrationName}`, 'error');
+            }
+        }
+
+        async function toggleIntegration(integrationName, enabled) {
+            try {
+                const response = await enhancedUI.request(`/api-keys/${integrationName}/toggle`, {
+                    method: 'POST',
+                    body: JSON.stringify({ enabled })
+                });
+                
+                if (response.success) {
+                    enhancedUI.showToast(
+                        `${integrationName} ${enabled ? 'enabled' : 'disabled'}`, 
+                        'success', 
+                        2000
+                    );
+                } else {
+                    enhancedUI.showToast(`Failed to toggle ${integrationName}`, 'error');
+                    // Revert toggle state
+                    event.target.checked = !enabled;
+                }
+            } catch (error) {
+                enhancedUI.showToast(`Error toggling ${integrationName}`, 'error');
+                event.target.checked = !enabled;
+            }
+        }
+
+        function refreshAllIntegrations() {
+            integrationManager.refreshAll();
+        }
+
+        function searchIntegrations() {
+            integrationManager.filterIntegrations();
+        }
+
+        function filterIntegrations() {
+            integrationManager.filterIntegrations();
+        }
+
+        function sortIntegrations() {
+            integrationManager.sortIntegrations();
+            integrationManager.renderIntegrations();
+        }
+
+        function clearFilters() {
+            integrationManager.clearFilters();
+        }
+
+        function updateSelection() {
+            integrationManager.updateSelection();
+        }
+
+        async function bulkTest() {
+            if (integrationManager.selectedIntegrations.size === 0) return;
+            
+            enhancedUI.showToast('Testing selected integrations...', 'info');
+            
+            const promises = Array.from(integrationManager.selectedIntegrations).map(integration =>
+                enhancedUI.request(`/test-integration/${integration}`, { method: 'POST' })
+            );
+            
+            try {
+                const results = await Promise.allSettled(promises);
+                const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+                enhancedUI.showToast(`${successful}/${results.length} tests completed successfully`, 'success');
+                await integrationManager.loadIntegrations();
+            } catch (error) {
+                enhancedUI.showToast('Bulk test failed', 'error');
+            }
+        }
+
+        function bulkToggle() {
+            enhancedUI.showToast('Bulk toggle coming soon...', 'info');
+        }
+
+        async function bulkDelete() {
+            if (integrationManager.selectedIntegrations.size === 0) return;
+            
+            const count = integrationManager.selectedIntegrations.size;
+            if (!confirm(`Are you sure you want to delete ${count} integrations?`)) {
+                return;
+            }
+
+            enhancedUI.showToast('Deleting selected integrations...', 'info');
+            
+            const promises = Array.from(integrationManager.selectedIntegrations).map(integration =>
+                enhancedUI.request(`/api-keys/${integration}`, { method: 'DELETE' })
+            );
+            
+            try {
+                const results = await Promise.allSettled(promises);
+                const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+                enhancedUI.showToast(`${successful}/${results.length} integrations deleted`, 'success');
+                await integrationManager.loadIntegrations();
+                integrationManager.selectedIntegrations.clear();
+                document.getElementById('bulk-actions').classList.remove('show');
+            } catch (error) {
+                enhancedUI.showToast('Bulk delete failed', 'error');
+            }
+        }
+
+        function exportData(format) {
+            enhancedUI.showToast(`Exporting data as ${format.toUpperCase()}...`, 'info');
+            
+            const data = integrationManager.integrations;
+            let content, filename, mimeType;
+            
+            if (format === 'csv') {
+                content = this.generateCSV(data);
+                filename = 'integrations.csv';
+                mimeType = 'text/csv';
+            } else {
+                content = JSON.stringify(data, null, 2);
+                filename = 'integrations.json';
+                mimeType = 'application/json';
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            enhancedUI.showToast('Export completed', 'success', 2000);
+        }
+
+        function generateCSV(data) {
+            const headers = ['Name', 'Type', 'Status', 'Requests', 'Success Rate', 'Response Time', 'Cost'];
+            const rows = data.map(integration => [
+                integration.displayName,
+                integration.type,
+                integration.status,
+                integration.metrics.requests_count,
+                integration.metrics.success_rate.toFixed(1) + '%',
+                integration.metrics.avg_response_time.toFixed(2) + 's',
+                '$' + integration.metrics.cost_incurred.toFixed(2)
+            ]);
+            
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        // Initialize integration manager
+        let integrationManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            integrationManager = new IntegrationManager();
+        });
+    </script>
+</body>
+</html>

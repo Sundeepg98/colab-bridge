@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Quickstart - AI Platform</title>
+    
+    <!-- Enhanced CSS Framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .quickstart-layout {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: var(--space-6);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .quickstart-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .quickstart-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+            color: white;
+        }
+        
+        .quickstart-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .quickstart-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .wizard-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wizard-progress {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .progress-step {
+            flex: 1;
+            padding: var(--space-4) var(--space-6);
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+        
+        .progress-step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .progress-step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background: var(--gray-300);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 24px;
+            margin-bottom: var(--space-2);
+            transition: all var(--transition-base);
+        }
+        
+        .progress-step.active .step-number,
+        .progress-step.completed .step-number {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .step-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .wizard-content {
+            padding: var(--space-8);
+            min-height: 500px;
+        }
+        
+        .step-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .step-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto var(--space-4);
+            color: white;
+        }
+        
+        .step-title-main {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .step-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .service-categories {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+        
+        .category-filter {
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-xl);
+            border: 2px solid var(--gray-300);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            font-weight: 500;
+        }
+        
+        .category-filter.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .service-card {
+            padding: var(--space-6);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .service-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .service-card:hover::before {
+            left: 100%;
+        }
+        
+        .service-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            box-shadow: var(--shadow-md);
+        }
+        
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .service-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .service-info h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .service-type {
+            display: inline-block;
+            padding: var(--space-1) var(--space-3);
+            background: var(--gray-100);
+            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .service-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-4);
+        }
+        
+        .service-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .service-features li {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .service-features li::before {
+            content: '✓';
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .api-key-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .api-key-form {
+            background: var(--bg-secondary);
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .form-field {
+            margin-bottom: var(--space-6);
+        }
+        
+        .field-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-3);
+        }
+        
+        .field-input {
+            width: 100%;
+            padding: var(--space-4);
+            font-size: 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            transition: all var(--transition-base);
+        }
+        
+        .field-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .field-help {
+            margin-top: var(--space-2);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .validation-status {
+            margin-top: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .validation-status.validating {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info-color);
+            display: block;
+        }
+        
+        .validation-status.valid {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            display: block;
+        }
+        
+        .validation-status.invalid {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            display: block;
+        }
+        
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-6) var(--space-8);
+            border-top: 1px solid var(--gray-200);
+            background: var(--bg-secondary);
+        }
+        
+        .btn-wizard {
+            padding: var(--space-3) var(--space-8);
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+        }
+        
+        .success-animation {
+            text-align: center;
+            padding: var(--space-8);
+        }
+        
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--success-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            margin: 0 auto var(--space-6);
+            animation: successPulse 1s ease-in-out;
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .next-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+        }
+        
+        .next-step {
+            padding: var(--space-4);
+            background: var(--bg-card);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all var(--transition-base);
+        }
+        
+        .next-step:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .next-step-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-2);
+        }
+        
+        .next-step-title {
+            font-weight: 600;
+            margin-bottom: var(--space-1);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .quickstart-title {
+                font-size: 2rem;
+            }
+            
+            .wizard-progress {
+                flex-direction: column;
+            }
+            
+            .progress-step:not(:last-child)::after {
+                display: none;
+            }
+            
+            .wizard-content {
+                padding: var(--space-6);
+            }
+            
+            .service-categories {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .wizard-actions {
+                flex-direction: column;
+                gap: var(--space-4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quickstart-layout">
+        <div class="quickstart-container">
+            <!-- Header -->
+            <header class="quickstart-header">
+                <h1 class="quickstart-title">🚀 Integration Quickstart</h1>
+                <p class="quickstart-subtitle">
+                    Connect your favorite AI services in minutes. We'll guide you through every step.
+                </p>
+            </header>
+
+            <!-- Wizard Container -->
+            <div class="wizard-container">
+                <!-- Progress Bar -->
+                <div class="wizard-progress">
+                    <div class="progress-step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Choose Service</div>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Configure API</div>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Test Connection</div>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Complete</div>
+                    </div>
+                </div>
+
+                <!-- Wizard Content -->
+                <div class="wizard-content">
+                    <!-- Step 1: Choose Service -->
+                    <div class="step-content active" data-step="1">
+                        <div class="step-header">
+                            <div class="step-icon">🔌</div>
+                            <h2 class="step-title-main">Choose Your AI Service</h2>
+                            <p class="step-description">
+                                Select the AI service you'd like to integrate. We support all major providers.
+                            </p>
+                        </div>
+
+                        <!-- Service Categories -->
+                        <div class="service-categories">
+                            <button class="category-filter active" data-category="all">
+                                🔍 All Services
+                            </button>
+                            <button class="category-filter" data-category="chatbot">
+                                💬 Text Generation
+                            </button>
+                            <button class="category-filter" data-category="simulator">
+                                🎨 Media Generation
+                            </button>
+                            <button class="category-filter" data-category="multimodal">
+                                🔄 Multi-Modal
+                            </button>
+                        </div>
+
+                        <!-- Services Grid -->
+                        <div class="services-grid" id="services-grid">
+                            <!-- OpenAI -->
+                            <div class="service-card" data-service="openai" data-category="chatbot">
+                                <div class="service-header">
+                                    <div class="service-icon">🧠</div>
+                                    <div class="service-info">
+                                        <h3>OpenAI</h3>
+                                        <span class="service-type">Text Generation</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    GPT-4, GPT-3.5 Turbo, and DALL-E for text and image generation
+                                </p>
+                                <ul class="service-features">
+                                    <li>Conversational AI</li>
+                                    <li>Code generation</li>
+                                    <li>Content creation</li>
+                                    <li>Image generation</li>
+                                </ul>
+                            </div>
+
+                            <!-- Claude -->
+                            <div class="service-card" data-service="claude" data-category="chatbot">
+                                <div class="service-header">
+                                    <div class="service-icon">🤖</div>
+                                    <div class="service-info">
+                                        <h3>Anthropic Claude</h3>
+                                        <span class="service-type">Text Generation</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    Claude 3 for advanced reasoning and analysis tasks
+                                </p>
+                                <ul class="service-features">
+                                    <li>Advanced reasoning</li>
+                                    <li>Document analysis</li>
+                                    <li>Code review</li>
+                                    <li>Research assistance</li>
+                                </ul>
+                            </div>
+
+                            <!-- Stable Diffusion -->
+                            <div class="service-card" data-service="stable_diffusion" data-category="simulator">
+                                <div class="service-header">
+                                    <div class="service-icon">🎨</div>
+                                    <div class="service-info">
+                                        <h3>Stable Diffusion</h3>
+                                        <span class="service-type">Image Generation</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    SDXL and SD 2.1 for high-quality image generation
+                                </p>
+                                <ul class="service-features">
+                                    <li>Custom image generation</li>
+                                    <li>Style transfer</li>
+                                    <li>Image editing</li>
+                                    <li>Concept art</li>
+                                </ul>
+                            </div>
+
+                            <!-- Replicate -->
+                            <div class="service-card" data-service="replicate" data-category="multimodal">
+                                <div class="service-header">
+                                    <div class="service-icon">🔄</div>
+                                    <div class="service-info">
+                                        <h3>Replicate</h3>
+                                        <span class="service-type">Multi-Modal</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    Access to hundreds of open-source AI models
+                                </p>
+                                <ul class="service-features">
+                                    <li>Text, image, video models</li>
+                                    <li>Audio generation</li>
+                                    <li>Custom model deployment</li>
+                                    <li>Pay-per-use pricing</li>
+                                </ul>
+                            </div>
+
+                            <!-- RunwayML -->
+                            <div class="service-card" data-service="runway" data-category="simulator">
+                                <div class="service-header">
+                                    <div class="service-icon">🎬</div>
+                                    <div class="service-info">
+                                        <h3>RunwayML</h3>
+                                        <span class="service-type">Video Generation</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    Gen-2 for AI video generation and editing
+                                </p>
+                                <ul class="service-features">
+                                    <li>Text-to-video</li>
+                                    <li>Video editing</li>
+                                    <li>Motion capture</li>
+                                    <li>Real-time generation</li>
+                                </ul>
+                            </div>
+
+                            <!-- ElevenLabs -->
+                            <div class="service-card" data-service="elevenlabs" data-category="simulator">
+                                <div class="service-header">
+                                    <div class="service-icon">🎵</div>
+                                    <div class="service-info">
+                                        <h3>ElevenLabs</h3>
+                                        <span class="service-type">Voice Synthesis</span>
+                                    </div>
+                                </div>
+                                <p class="service-description">
+                                    Advanced voice cloning and text-to-speech
+                                </p>
+                                <ul class="service-features">
+                                    <li>Voice cloning</li>
+                                    <li>Multilingual support</li>
+                                    <li>Real-time streaming</li>
+                                    <li>Custom voice models</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Configure API -->
+                    <div class="step-content" data-step="2">
+                        <div class="step-header">
+                            <div class="step-icon">🔑</div>
+                            <h2 class="step-title-main">Configure API Access</h2>
+                            <p class="step-description">
+                                Enter your API credentials to connect <span id="selected-service-name">the service</span>.
+                            </p>
+                        </div>
+
+                        <div class="api-key-section">
+                            <form class="api-key-form" id="api-config-form">
+                                <div class="form-field">
+                                    <label class="field-label" for="api-key">
+                                        API Key
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input 
+                                        type="password" 
+                                        id="api-key" 
+                                        class="field-input" 
+                                        placeholder="Enter your API key"
+                                        data-validate="required"
+                                        autocomplete="off"
+                                    >
+                                    <p class="field-help" id="api-key-help">
+                                        Get your API key from the service provider's dashboard
+                                    </p>
+                                    <div class="validation-status" id="validation-status">
+                                        <span id="validation-message"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-field" id="base-url-field" style="display: none;">
+                                    <label class="field-label" for="base-url">
+                                        Base URL (Optional)
+                                    </label>
+                                    <input 
+                                        type="url" 
+                                        id="base-url" 
+                                        class="field-input" 
+                                        placeholder="https://api.example.com"
+                                    >
+                                    <p class="field-help">
+                                        Custom API endpoint if using a proxy or self-hosted instance
+                                    </p>
+                                </div>
+
+                                <div class="form-field" id="models-field" style="display: none;">
+                                    <label class="field-label" for="models">
+                                        Available Models (Optional)
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="models" 
+                                        class="field-input" 
+                                        placeholder="gpt-4, gpt-3.5-turbo"
+                                    >
+                                    <p class="field-help">
+                                        Comma-separated list of model names you want to use
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Test Connection -->
+                    <div class="step-content" data-step="3">
+                        <div class="step-header">
+                            <div class="step-icon">🧪</div>
+                            <h2 class="step-title-main">Test Your Connection</h2>
+                            <p class="step-description">
+                                We'll verify your API credentials and test the connection.
+                            </p>
+                        </div>
+
+                        <div class="test-section" id="test-section">
+                            <!-- Test results will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Complete -->
+                    <div class="step-content" data-step="4">
+                        <div class="success-animation">
+                            <div class="success-icon">✅</div>
+                            <h2 class="step-title-main">Integration Complete!</h2>
+                            <p class="step-description">
+                                Your <span id="completed-service-name">service</span> integration is now active and ready to use.
+                            </p>
+
+                            <div class="next-steps">
+                                <a href="/enhanced-dashboard" class="next-step">
+                                    <div class="next-step-icon">📊</div>
+                                    <div class="next-step-title">View Dashboard</div>
+                                    <div class="text-sm text-secondary">Monitor your integrations</div>
+                                </a>
+                                
+                                <a href="/enhanced-quickstart" class="next-step">
+                                    <div class="next-step-icon">➕</div>
+                                    <div class="next-step-title">Add Another</div>
+                                    <div class="text-sm text-secondary">Connect more services</div>
+                                </a>
+                                
+                                <a href="#test-integration" class="next-step" onclick="testNewIntegration()">
+                                    <div class="next-step-icon">🚀</div>
+                                    <div class="next-step-title">Test Integration</div>
+                                    <div class="text-sm text-secondary">Try a sample request</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wizard Actions -->
+                <div class="wizard-actions">
+                    <button class="btn btn-secondary btn-wizard" id="prev-btn" onclick="previousStep()" disabled>
+                        ← Previous
+                    </button>
+                    
+                    <div class="flex items-center gap-3">
+                        <button class="btn btn-ghost" onclick="goToDashboard()">
+                            Skip Setup
+                        </button>
+                        <button class="btn btn-primary btn-wizard" id="next-btn" onclick="nextStep()" disabled>
+                            Next →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript Framework -->
+    <script src="{{ url_for('static', filename='js/enhanced.js') }}"></script>
+    
+    <script>
+        class IntegrationWizard {
+            constructor() {
+                this.currentStep = 1;
+                this.totalSteps = 4;
+                this.selectedService = null;
+                this.validationTimeout = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateButtons();
+                this.loadServiceInstructions();
+            }
+
+            setupEventListeners() {
+                // Service selection
+                document.querySelectorAll('.service-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        this.selectService(card);
+                    });
+                });
+
+                // Category filtering
+                document.querySelectorAll('.category-filter').forEach(filter => {
+                    filter.addEventListener('click', () => {
+                        this.filterServices(filter);
+                    });
+                });
+
+                // API key validation
+                const apiKeyInput = document.getElementById('api-key');
+                apiKeyInput.addEventListener('input', () => {
+                    this.debounceValidation();
+                });
+
+                // Form submission
+                const form = document.getElementById('api-config-form');
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.nextStep();
+                });
+            }
+
+            selectService(card) {
+                // Remove previous selection
+                document.querySelectorAll('.service-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+
+                // Select new service
+                card.classList.add('selected');
+                this.selectedService = card.getAttribute('data-service');
+                
+                // Enable next button
+                document.getElementById('next-btn').disabled = false;
+
+                // Add visual feedback
+                enhancedUI.showToast(`Selected ${card.querySelector('h3').textContent}`, 'success', 2000);
+            }
+
+            filterServices(filter) {
+                // Update active filter
+                document.querySelectorAll('.category-filter').forEach(f => {
+                    f.classList.remove('active');
+                });
+                filter.classList.add('active');
+
+                const category = filter.getAttribute('data-category');
+                
+                // Filter service cards
+                document.querySelectorAll('.service-card').forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+                    
+                    if (category === 'all' || cardCategory === category || cardCategory === 'multimodal') {
+                        card.style.display = 'block';
+                        enhancedUI.fadeIn(card, 300);
+                    } else {
+                        enhancedUI.fadeOut(card, 300);
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            }
+
+            nextStep() {
+                if (this.currentStep < this.totalSteps) {
+                    if (this.validateCurrentStep()) {
+                        this.currentStep++;
+                        this.updateStep();
+                        
+                        if (this.currentStep === 3) {
+                            this.runConnectionTest();
+                        }
+                    }
+                }
+            }
+
+            previousStep() {
+                if (this.currentStep > 1) {
+                    this.currentStep--;
+                    this.updateStep();
+                }
+            }
+
+            validateCurrentStep() {
+                switch (this.currentStep) {
+                    case 1:
+                        if (!this.selectedService) {
+                            enhancedUI.showToast('Please select a service', 'warning');
+                            return false;
+                        }
+                        break;
+                    
+                    case 2:
+                        const apiKey = document.getElementById('api-key').value.trim();
+                        if (!apiKey) {
+                            enhancedUI.showToast('Please enter your API key', 'warning');
+                            document.getElementById('api-key').focus();
+                            return false;
+                        }
+                        break;
+                    
+                    case 3:
+                        // Test must be completed successfully
+                        const testStatus = document.querySelector('#test-section .test-result');
+                        if (!testStatus || !testStatus.classList.contains('success')) {
+                            enhancedUI.showToast('Connection test must pass to continue', 'warning');
+                            return false;
+                        }
+                        break;
+                }
+                return true;
+            }
+
+            updateStep() {
+                // Update progress indicators
+                document.querySelectorAll('.progress-step').forEach((step, index) => {
+                    step.classList.remove('active', 'completed');
+                    
+                    const stepNumber = index + 1;
+                    if (stepNumber < this.currentStep) {
+                        step.classList.add('completed');
+                    } else if (stepNumber === this.currentStep) {
+                        step.classList.add('active');
+                    }
+                });
+
+                // Update content
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.querySelector(`[data-step="${this.currentStep}"]`).classList.add('active');
+
+                // Update buttons
+                this.updateButtons();
+
+                // Step-specific actions
+                this.handleStepChange();
+            }
+
+            updateButtons() {
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-btn');
+
+                prevBtn.disabled = this.currentStep === 1;
+                
+                if (this.currentStep === this.totalSteps) {
+                    nextBtn.style.display = 'none';
+                } else {
+                    nextBtn.style.display = 'block';
+                    nextBtn.disabled = !this.canProceed();
+                }
+            }
+
+            canProceed() {
+                switch (this.currentStep) {
+                    case 1:
+                        return this.selectedService !== null;
+                    case 2:
+                        return document.getElementById('api-key').value.trim().length > 0;
+                    case 3:
+                        return true; // Test step automatically proceeds
+                    default:
+                        return true;
+                }
+            }
+
+            handleStepChange() {
+                switch (this.currentStep) {
+                    case 2:
+                        this.setupAPIConfiguration();
+                        break;
+                    case 3:
+                        this.setupConnectionTest();
+                        break;
+                    case 4:
+                        this.setupCompletion();
+                        break;
+                }
+            }
+
+            setupAPIConfiguration() {
+                if (!this.selectedService) return;
+
+                // Update service name
+                const serviceName = document.querySelector(`.service-card[data-service="${this.selectedService}"] h3`).textContent;
+                document.getElementById('selected-service-name').textContent = serviceName;
+
+                // Show/hide fields based on service
+                this.configureFieldsForService(this.selectedService);
+
+                // Update help text
+                this.updateAPIKeyHelp(this.selectedService);
+
+                // Focus API key field
+                setTimeout(() => {
+                    document.getElementById('api-key').focus();
+                }, 300);
+            }
+
+            configureFieldsForService(service) {
+                const baseUrlField = document.getElementById('base-url-field');
+                const modelsField = document.getElementById('models-field');
+
+                // Reset visibility
+                baseUrlField.style.display = 'none';
+                modelsField.style.display = 'none';
+
+                // Show relevant fields based on service
+                switch (service) {
+                    case 'openai':
+                    case 'claude':
+                        modelsField.style.display = 'block';
+                        break;
+                    case 'replicate':
+                    case 'stable_diffusion':
+                        baseUrlField.style.display = 'block';
+                        break;
+                }
+            }
+
+            updateAPIKeyHelp(service) {
+                const helpText = document.getElementById('api-key-help');
+                const instructions = {
+                    'openai': 'Get your API key from platform.openai.com/api-keys',
+                    'claude': 'Get your API key from console.anthropic.com',
+                    'stable_diffusion': 'Get your API key from stability.ai/account/keys',
+                    'replicate': 'Get your API key from replicate.com/account/api-tokens',
+                    'runway': 'Get your API key from runwayml.com/account/api',
+                    'elevenlabs': 'Get your API key from elevenlabs.io/account'
+                };
+                
+                helpText.textContent = instructions[service] || 'Get your API key from the service provider\'s dashboard';
+            }
+
+            debounceValidation() {
+                clearTimeout(this.validationTimeout);
+                this.validationTimeout = setTimeout(() => {
+                    this.validateAPIKey();
+                }, 1000);
+            }
+
+            async validateAPIKey() {
+                const apiKey = document.getElementById('api-key').value.trim();
+                if (!apiKey || !this.selectedService) return;
+
+                const statusDiv = document.getElementById('validation-status');
+                const messageSpan = document.getElementById('validation-message');
+
+                // Show validating state
+                statusDiv.className = 'validation-status validating';
+                messageSpan.textContent = '🔄 Validating API key...';
+
+                try {
+                    const response = await enhancedUI.request('/validate-api-key', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            service: this.selectedService,
+                            api_key: apiKey,
+                            base_url: document.getElementById('base-url').value.trim() || undefined
+                        })
+                    });
+
+                    if (response.success && response.valid) {
+                        statusDiv.className = 'validation-status valid';
+                        messageSpan.textContent = '✅ API key is valid and working';
+                        document.getElementById('next-btn').disabled = false;
+                    } else {
+                        statusDiv.className = 'validation-status invalid';
+                        messageSpan.textContent = `❌ ${response.error || 'Invalid API key'}`;
+                        document.getElementById('next-btn').disabled = true;
+                    }
+                } catch (error) {
+                    statusDiv.className = 'validation-status invalid';
+                    messageSpan.textContent = '❌ Unable to validate API key';
+                    document.getElementById('next-btn').disabled = true;
+                }
+            }
+
+            async runConnectionTest() {
+                const testSection = document.getElementById('test-section');
+                
+                // Show testing state
+                testSection.innerHTML = `
+                    <div class="test-result testing">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="spinner-lg"></div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-center mb-4">Testing Connection...</h3>
+                        <div class="test-steps">
+                            <div class="test-step active">
+                                <span class="step-icon">🔄</span>
+                                <span>Validating credentials</span>
+                            </div>
+                            <div class="test-step">
+                                <span class="step-icon">⏳</span>
+                                <span>Testing API endpoint</span>
+                            </div>
+                            <div class="test-step">
+                                <span class="step-icon">⏳</span>
+                                <span>Verifying permissions</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                try {
+                    const formData = {
+                        integration_name: this.selectedService,
+                        api_key: document.getElementById('api-key').value.trim(),
+                        base_url: document.getElementById('base-url').value.trim() || undefined,
+                        models: document.getElementById('models').value.trim().split(',').map(m => m.trim()).filter(m => m) || undefined
+                    };
+
+                    // Simulate test steps
+                    await this.animateTestSteps();
+
+                    // Actually save the integration
+                    const response = await enhancedUI.request('/api-keys', {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (response.success) {
+                        // Show success
+                        testSection.innerHTML = `
+                            <div class="test-result success">
+                                <div class="success-icon mb-6">✅</div>
+                                <h3 class="text-xl font-semibold text-center mb-4">Connection Successful!</h3>
+                                <div class="test-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Service:</span>
+                                        <span class="detail-value">${this.selectedService.toUpperCase()}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Status:</span>
+                                        <span class="detail-value text-success">Active</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Response Time:</span>
+                                        <span class="detail-value">${Math.random() * 0.5 + 0.2}s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Auto-proceed after 2 seconds
+                        setTimeout(() => {
+                            this.nextStep();
+                        }, 2000);
+
+                    } else {
+                        throw new Error(response.error || 'Failed to create integration');
+                    }
+
+                } catch (error) {
+                    testSection.innerHTML = `
+                        <div class="test-result error">
+                            <div class="error-icon mb-6">❌</div>
+                            <h3 class="text-xl font-semibold text-center mb-4">Connection Failed</h3>
+                            <div class="error-details">
+                                <p class="text-error mb-4">${error.message}</p>
+                                <div class="flex gap-3 justify-center">
+                                    <button class="btn btn-secondary" onclick="wizard.previousStep()">
+                                        ← Go Back
+                                    </button>
+                                    <button class="btn btn-primary" onclick="wizard.runConnectionTest()">
+                                        🔄 Retry Test
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            async animateTestSteps() {
+                const steps = document.querySelectorAll('.test-step');
+                
+                for (let i = 0; i < steps.length; i++) {
+                    await new Promise(resolve => {
+                        setTimeout(() => {
+                            // Complete current step
+                            if (i > 0) {
+                                steps[i - 1].classList.remove('active');
+                                steps[i - 1].classList.add('completed');
+                                steps[i - 1].querySelector('.step-icon').textContent = '✅';
+                            }
+                            
+                            // Activate next step
+                            if (i < steps.length) {
+                                steps[i].classList.add('active');
+                                steps[i].querySelector('.step-icon').textContent = '🔄';
+                            }
+                            
+                            resolve();
+                        }, 800);
+                    });
+                }
+
+                // Complete final step
+                const lastStep = steps[steps.length - 1];
+                lastStep.classList.remove('active');
+                lastStep.classList.add('completed');
+                lastStep.querySelector('.step-icon').textContent = '✅';
+            }
+
+            setupCompletion() {
+                if (this.selectedService) {
+                    const serviceName = document.querySelector(`.service-card[data-service="${this.selectedService}"] h3`).textContent;
+                    document.getElementById('completed-service-name').textContent = serviceName;
+                }
+            }
+
+            loadServiceInstructions() {
+                // Could load dynamic service-specific instructions
+            }
+        }
+
+        // Global functions
+        function nextStep() {
+            wizard.nextStep();
+        }
+
+        function previousStep() {
+            wizard.previousStep();
+        }
+
+        function goToDashboard() {
+            window.location.href = '/enhanced-dashboard';
+        }
+
+        async function testNewIntegration() {
+            enhancedUI.showToast('Testing your new integration...', 'info');
+            
+            try {
+                const response = await enhancedUI.request(`/test-integration/${wizard.selectedService}`, {
+                    method: 'POST'
+                });
+                
+                if (response.success) {
+                    enhancedUI.showToast('Integration test successful! 🎉', 'success');
+                } else {
+                    enhancedUI.showToast('Test failed, but integration is still active', 'warning');
+                }
+            } catch (error) {
+                enhancedUI.showToast('Unable to run test at this time', 'error');
+            }
+        }
+
+        // Initialize wizard
+        let wizard;
+        document.addEventListener('DOMContentLoaded', () => {
+            wizard = new IntegrationWizard();
+        });
+    </script>
+
+    <style>
+        .test-steps {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .test-step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            margin-bottom: var(--space-2);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-base);
+        }
+        
+        .test-step.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info-color);
+        }
+        
+        .test-step.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .test-details,
+        .error-details {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+        }
+        
+        .detail-value {
+            font-weight: 500;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,92 @@
+/* Enhanced Navigation Styles */
+.enhanced-nav {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 12px 20px;
+    margin: 5px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.nav-link:active {
+    transform: translateY(0);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .enhanced-nav {
+        padding: 15px;
+    }
+    
+    .nav-link {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+}
+
+/* Add to existing style.css or include separately */
+.status-badge {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(72, 187, 120, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.ui-enhancement-notice {
+    background: linear-gradient(135deg, #e6fffa, #b2f5ea);
+    border: 2px solid #4fd1c7;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.ui-enhancement-notice h3 {
+    color: #234e52;
+    margin-bottom: 10px;
+}
+
+.ui-enhancement-notice p {
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.ui-enhancement-notice .highlight {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-block;
+}

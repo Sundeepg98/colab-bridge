@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai_platform_db
+    environment:
+      POSTGRES_DB: ai_platform
+      POSTGRES_USER: ${DB_USER:-ai_platform_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ai_platform_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: ai_platform_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Main application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_platform_app
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-ai_platform_user}:${DB_PASSWORD:-changeme}@postgres:5432/ai_platform
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-jwt-secret}
+      MASTER_KEY: ${MASTER_KEY:-change-this-master-key}
+      
+      # Application
+      FLASK_ENV: ${FLASK_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # External APIs (users will add their own)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./static:/app/static
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: ai_platform_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/usr/share/nginx/html/static:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  # Background task worker (optional)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_platform_worker
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      # Same environment as app
+      DATABASE_URL: postgresql://${DB_USER:-ai_platform_user}:${DB_PASSWORD:-changeme}@postgres:5432/ai_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  nginx_logs:

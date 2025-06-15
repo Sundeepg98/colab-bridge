@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AI Platform</title>
+    
+    <!-- Enhanced CSS Framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .settings-layout {
+            min-height: 100vh;
+            background: var(--bg-secondary);
+        }
+        
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+        
+        .settings-header {
+            margin-bottom: var(--space-8);
+        }
+        
+        .settings-nav {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: var(--space-8);
+        }
+        
+        .nav-sidebar {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            padding: var(--space-6);
+            height: fit-content;
+            position: sticky;
+            top: var(--space-6);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            margin-bottom: var(--space-2);
+            text-decoration: none;
+            color: var(--text-secondary);
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .nav-icon {
+            font-size: 1.25rem;
+        }
+        
+        .settings-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+        
+        .section {
+            display: none;
+            padding: var(--space-8);
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .section-header {
+            margin-bottom: var(--space-8);
+            padding-bottom: var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+        
+        .settings-grid {
+            display: grid;
+            gap: var(--space-8);
+        }
+        
+        .setting-group {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        
+        .group-header {
+            padding: var(--space-4) var(--space-6);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .group-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .group-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .group-content {
+            padding: var(--space-6);
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4) 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info {
+            flex: 1;
+        }
+        
+        .setting-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .setting-help {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .setting-control {
+            margin-left: var(--space-4);
+        }
+        
+        .profile-section {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: var(--space-6);
+            align-items: start;
+        }
+        
+        .avatar-upload {
+            text-align: center;
+        }
+        
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin-bottom: var(--space-4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity var(--transition-base);
+            cursor: pointer;
+        }
+        
+        .avatar-preview:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        .profile-form {
+            display: grid;
+            gap: var(--space-6);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+        
+        .billing-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: var(--space-2) var(--space-4);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+        
+        .usage-meter {
+            margin: var(--space-4) 0;
+        }
+        
+        .usage-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+        
+        .usage-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .usage-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .api-key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-3);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .key-info {
+            flex: 1;
+        }
+        
+        .key-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .key-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .key-preview {
+            font-family: var(--font-mono);
+            background: var(--gray-100);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: var(--space-1);
+        }
+        
+        .key-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4) 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-info {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .notification-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .danger-zone {
+            border: 2px solid var(--error-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .danger-title {
+            color: var(--error-color);
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: var(--space-3);
+        }
+        
+        .danger-description {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .settings-nav {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+            
+            .nav-sidebar {
+                position: static;
+                display: flex;
+                overflow-x: auto;
+                padding: var(--space-4);
+            }
+            
+            .nav-item {
+                white-space: nowrap;
+                margin-right: var(--space-2);
+                margin-bottom: 0;
+            }
+            
+            .profile-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-3);
+            }
+            
+            .setting-control {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-layout">
+        <div class="settings-container">
+            <!-- Header -->
+            <header class="settings-header">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-primary mb-2">Settings</h1>
+                        <p class="text-secondary">Manage your account, preferences, and integrations</p>
+                    </div>
+                    <button class="btn btn-ghost" onclick="window.location.href='/enhanced-dashboard'">
+                        <span>←</span>
+                        <span>Back to Dashboard</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Settings Navigation -->
+            <div class="settings-nav">
+                <!-- Sidebar Navigation -->
+                <nav class="nav-sidebar">
+                    <a href="#profile" class="nav-item active" data-section="profile">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#account" class="nav-item" data-section="account">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Account</span>
+                    </a>
+                    <a href="#billing" class="nav-item" data-section="billing">
+                        <span class="nav-icon">💳</span>
+                        <span>Billing</span>
+                    </a>
+                    <a href="#api-keys" class="nav-item" data-section="api-keys">
+                        <span class="nav-icon">🔑</span>
+                        <span>API Keys</span>
+                    </a>
+                    <a href="#notifications" class="nav-item" data-section="notifications">
+                        <span class="nav-icon">🔔</span>
+                        <span>Notifications</span>
+                    </a>
+                    <a href="#privacy" class="nav-item" data-section="privacy">
+                        <span class="nav-icon">🔒</span>
+                        <span>Privacy</span>
+                    </a>
+                    <a href="#integrations" class="nav-item" data-section="integrations">
+                        <span class="nav-icon">🔌</span>
+                        <span>Integrations</span>
+                    </a>
+                    <a href="#advanced" class="nav-item" data-section="advanced">
+                        <span class="nav-icon">🔧</span>
+                        <span>Advanced</span>
+                    </a>
+                </nav>
+
+                <!-- Settings Content -->
+                <div class="settings-content">
+                    <!-- Profile Section -->
+                    <section class="section active" id="profile">
+                        <div class="section-header">
+                            <h2 class="section-title">Profile Settings</h2>
+                            <p class="section-description">Manage your personal information and preferences</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <div class="avatar-upload">
+                                <div class="avatar-preview">
+                                    <span id="avatar-initials">{{ user_name[0] if user_name else 'U' }}</span>
+                                    <div class="avatar-overlay">
+                                        <span style="color: white;">📷</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary btn-sm">Change Avatar</button>
+                            </div>
+
+                            <form class="profile-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-input" value="{{ user_name.split()[0] if user_name else '' }}" placeholder="John">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-input" value="{{ user_name.split()[-1] if user_name and ' ' in user_name else '' }}" placeholder="Doe">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-input" value="john.doe@example.com" placeholder="john.doe@example.com">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Company (Optional)</label>
+                                    <input type="text" class="form-input" placeholder="Acme Corp">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Timezone</label>
+                                    <select class="form-select">
+                                        <option>UTC-8 (Pacific Time)</option>
+                                        <option>UTC-5 (Eastern Time)</option>
+                                        <option>UTC+0 (Greenwich Mean Time)</option>
+                                        <option>UTC+1 (Central European Time)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Bio</label>
+                                    <textarea class="form-textarea" rows="3" placeholder="Tell us about yourself..."></textarea>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="button" class="btn btn-secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Account Section -->
+                    <section class="section" id="account">
+                        <div class="section-header">
+                            <h2 class="section-title">Account Settings</h2>
+                            <p class="section-description">Manage your account security and preferences</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Security</h3>
+                                    <p class="group-description">Manage your account security settings</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Change Password</div>
+                                            <div class="setting-help">Update your account password</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">Change</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Two-Factor Authentication</div>
+                                            <div class="setting-help">Add an extra layer of security to your account</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Session Management</div>
+                                            <div class="setting-help">View and manage active sessions</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">Manage</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Preferences</h3>
+                                    <p class="group-description">Customize your platform experience</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Theme</div>
+                                            <div class="setting-help">Choose your preferred color theme</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <select class="form-select" onchange="handleThemeChange(this.value)">
+                                                <option value="light">Light</option>
+                                                <option value="dark">Dark</option>
+                                                <option value="auto">Auto</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Language</div>
+                                            <div class="setting-help">Select your preferred language</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <select class="form-select">
+                                                <option>English (US)</option>
+                                                <option>English (UK)</option>
+                                                <option>Spanish</option>
+                                                <option>French</option>
+                                                <option>German</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Auto-save Drafts</div>
+                                            <div class="setting-help">Automatically save your work as you type</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Billing Section -->
+                    <section class="section" id="billing">
+                        <div class="section-header">
+                            <h2 class="section-title">Billing & Usage</h2>
+                            <p class="section-description">Manage your subscription and track usage</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="billing-card">
+                                <div class="plan-badge">Professional Plan</div>
+                                <h3 class="text-xl font-semibold mb-2">$29/month</h3>
+                                <p class="text-secondary mb-4">Billed monthly • Next billing: Feb 15, 2024</p>
+                                
+                                <div class="usage-meter">
+                                    <div class="usage-bar">
+                                        <span class="usage-label">API Requests</span>
+                                        <span class="usage-value">1,247 / 10,000</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 12.47%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="usage-meter">
+                                    <div class="usage-bar">
+                                        <span class="usage-label">Storage</span>
+                                        <span class="usage-value">2.3 GB / 100 GB</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 2.3%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-3 mt-6">
+                                    <button class="btn btn-primary">Upgrade Plan</button>
+                                    <button class="btn btn-secondary">View Usage</button>
+                                </div>
+                            </div>
+
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Payment Method</h3>
+                                    <p class="group-description">Manage your payment information</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Credit Card</div>
+                                            <div class="setting-help">•••• •••• •••• 4242 • Expires 12/25</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">Update</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Billing Address</div>
+                                            <div class="setting-help">Update your billing information</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">Edit</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Download Invoices</div>
+                                            <div class="setting-help">View and download your billing history</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">View</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- API Keys Section -->
+                    <section class="section" id="api-keys">
+                        <div class="section-header">
+                            <h2 class="section-title">API Keys</h2>
+                            <p class="section-description">Manage your platform API keys and tokens</p>
+                        </div>
+
+                        <div class="setting-group">
+                            <div class="group-header">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h3 class="group-title">Active API Keys</h3>
+                                        <p class="group-description">Use these keys to access our API programmatically</p>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="createAPIKey()">
+                                        <span>➕</span>
+                                        <span>Create Key</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="group-content">
+                                <div id="api-keys-list">
+                                    <!-- API keys will be loaded here -->
+                                    <div class="loading-overlay" style="position: relative; height: 100px;">
+                                        <div class="spinner"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Notifications Section -->
+                    <section class="section" id="notifications">
+                        <div class="section-header">
+                            <h2 class="section-title">Notifications</h2>
+                            <p class="section-description">Control how and when you receive notifications</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Email Notifications</h3>
+                                    <p class="group-description">Manage your email notification preferences</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="notification-item">
+                                        <div class="notification-info">
+                                            <div class="notification-title">System Updates</div>
+                                            <div class="notification-description">Important platform updates and maintenance notices</div>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" id="system-updates" checked>
+                                            <label for="system-updates" class="sr-only">System Updates</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-item">
+                                        <div class="notification-info">
+                                            <div class="notification-title">Integration Alerts</div>
+                                            <div class="notification-description">Notifications when integrations fail or need attention</div>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" id="integration-alerts" checked>
+                                            <label for="integration-alerts" class="sr-only">Integration Alerts</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-item">
+                                        <div class="notification-info">
+                                            <div class="notification-title">Usage Alerts</div>
+                                            <div class="notification-description">Alerts when you approach usage limits</div>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" id="usage-alerts" checked>
+                                            <label for="usage-alerts" class="sr-only">Usage Alerts</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-item">
+                                        <div class="notification-info">
+                                            <div class="notification-title">Marketing Updates</div>
+                                            <div class="notification-description">Product news, tips, and promotional content</div>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" id="marketing-updates">
+                                            <label for="marketing-updates" class="sr-only">Marketing Updates</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Push Notifications</h3>
+                                    <p class="group-description">Real-time browser notifications</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Enable Push Notifications</div>
+                                            <div class="setting-help">Receive real-time alerts in your browser</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" onchange="togglePushNotifications(this.checked)">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Privacy Section -->
+                    <section class="section" id="privacy">
+                        <div class="section-header">
+                            <h2 class="section-title">Privacy & Security</h2>
+                            <p class="section-description">Control your data and privacy settings</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Data Collection</h3>
+                                    <p class="group-description">Manage how we collect and use your data</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Analytics & Performance</div>
+                                            <div class="setting-help">Help us improve the platform by sharing usage data</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Crash Reports</div>
+                                            <div class="setting-help">Automatically send crash reports to help us fix issues</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Data Export</h3>
+                                    <p class="group-description">Download your data and account information</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Export Account Data</div>
+                                            <div class="setting-help">Download all your account data and usage history</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm" onclick="exportAccountData()">Export</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Integrations Section -->
+                    <section class="section" id="integrations">
+                        <div class="section-header">
+                            <h2 class="section-title">Integration Settings</h2>
+                            <p class="section-description">Manage your AI service integrations and preferences</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Default Settings</h3>
+                                    <p class="group-description">Set default preferences for new integrations</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Auto-enable New Integrations</div>
+                                            <div class="setting-help">Automatically enable integrations after setup</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Default Timeout</div>
+                                            <div class="setting-help">Default request timeout for API calls</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <select class="form-select">
+                                                <option>30 seconds</option>
+                                                <option>60 seconds</option>
+                                                <option>120 seconds</option>
+                                                <option>300 seconds</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Retry Failed Requests</div>
+                                            <div class="setting-help">Automatically retry failed API requests</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h3 class="group-title">Quick Actions</h3>
+                                            <p class="group-description">Manage all your integrations</p>
+                                        </div>
+                                        <button class="btn btn-primary btn-sm" onclick="window.location.href='/enhanced-integrations'">
+                                            <span>🔌</span>
+                                            <span>Manage Integrations</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="group-content">
+                                    <div class="flex gap-3 flex-wrap">
+                                        <button class="btn btn-secondary" onclick="testAllIntegrations()">
+                                            <span>🧪</span>
+                                            <span>Test All</span>
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="refreshAllIntegrations()">
+                                            <span>🔄</span>
+                                            <span>Refresh All</span>
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="window.location.href='/enhanced-quickstart'">
+                                            <span>➕</span>
+                                            <span>Add Integration</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Advanced Section -->
+                    <section class="section" id="advanced">
+                        <div class="section-header">
+                            <h2 class="section-title">Advanced Settings</h2>
+                            <p class="section-description">Advanced configuration and danger zone</p>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="group-title">Developer Settings</h3>
+                                    <p class="group-description">Advanced options for developers</p>
+                                </div>
+                                <div class="group-content">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Debug Mode</div>
+                                            <div class="setting-help">Enable detailed logging and debug information</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <label class="integration-toggle">
+                                                <input type="checkbox">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <div class="setting-label">Webhook URL</div>
+                                            <div class="setting-help">Receive real-time notifications via webhooks</div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <button class="btn btn-secondary btn-sm">Configure</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="danger-zone">
+                                <h3 class="danger-title">⚠️ Danger Zone</h3>
+                                <p class="danger-description">
+                                    These actions are irreversible. Please proceed with caution.
+                                </p>
+                                
+                                <div class="flex gap-3 flex-wrap">
+                                    <button class="btn btn-error" onclick="resetAllSettings()">
+                                        Reset All Settings
+                                    </button>
+                                    <button class="btn btn-error" onclick="clearAllData()">
+                                        Clear All Data
+                                    </button>
+                                    <button class="btn btn-error" onclick="deleteAccount()">
+                                        Delete Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript Framework -->
+    <script src="{{ url_for('static', filename='js/enhanced.js') }}"></script>
+    
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.currentSection = 'profile';
+                this.init();
+            }
+
+            init() {
+                this.setupNavigation();
+                this.loadAPIKeys();
+                this.setupEventListeners();
+                this.loadSettings();
+            }
+
+            setupNavigation() {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = item.getAttribute('data-section');
+                        this.switchSection(section);
+                    });
+                });
+            }
+
+            switchSection(sectionId) {
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                // Update content
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(sectionId).classList.add('active');
+
+                this.currentSection = sectionId;
+                
+                // Load section-specific data
+                this.loadSectionData(sectionId);
+            }
+
+            loadSectionData(sectionId) {
+                switch (sectionId) {
+                    case 'api-keys':
+                        this.loadAPIKeys();
+                        break;
+                    case 'billing':
+                        this.loadBillingData();
+                        break;
+                    case 'integrations':
+                        this.loadIntegrationSettings();
+                        break;
+                }
+            }
+
+            async loadAPIKeys() {
+                const container = document.getElementById('api-keys-list');
+                
+                try {
+                    // For demo purposes, show sample API keys
+                    const apiKeys = [
+                        {
+                            name: 'Production API Key',
+                            key: 'sk-ai-prod-1234567890abcdef',
+                            created: '2024-01-15',
+                            lastUsed: '2024-02-10',
+                            permissions: ['read', 'write']
+                        },
+                        {
+                            name: 'Development API Key',
+                            key: 'sk-ai-dev-abcdef1234567890',
+                            created: '2024-02-01',
+                            lastUsed: '2024-02-09',
+                            permissions: ['read']
+                        }
+                    ];
+
+                    this.renderAPIKeys(apiKeys, container);
+                } catch (error) {
+                    container.innerHTML = `
+                        <div class="text-center p-6">
+                            <p class="text-error">Failed to load API keys</p>
+                            <button class="btn btn-secondary btn-sm mt-2" onclick="settingsManager.loadAPIKeys()">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            renderAPIKeys(apiKeys, container) {
+                if (apiKeys.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center p-6">
+                            <p class="text-secondary">No API keys found</p>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="createAPIKey()">
+                                Create Your First API Key
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const html = apiKeys.map(key => `
+                    <div class="api-key-item">
+                        <div class="key-info">
+                            <div class="key-name">${key.name}</div>
+                            <div class="key-details">
+                                Created: ${this.formatDate(key.created)} • 
+                                Last used: ${this.formatDate(key.lastUsed)} • 
+                                Permissions: ${key.permissions.join(', ')}
+                            </div>
+                            <div class="key-preview">${key.key}</div>
+                        </div>
+                        <div class="key-actions">
+                            <button class="btn btn-ghost btn-xs" onclick="copyAPIKey('${key.key}')" data-tooltip="Copy">
+                                📋
+                            </button>
+                            <button class="btn btn-ghost btn-xs" onclick="editAPIKey('${key.name}')" data-tooltip="Edit">
+                                ✏️
+                            </button>
+                            <button class="btn btn-ghost btn-xs" onclick="deleteAPIKey('${key.name}')" data-tooltip="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+
+            setupEventListeners() {
+                // Auto-save form changes
+                document.querySelectorAll('input, select, textarea').forEach(input => {
+                    if (input.hasAttribute('data-autosave')) {
+                        input.addEventListener('change', () => {
+                            this.autoSaveSettings();
+                        });
+                    }
+                });
+
+                // Handle form submissions
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.saveSettings(form);
+                    });
+                });
+            }
+
+            async saveSettings(form) {
+                const formData = new FormData(form);
+                const settings = Object.fromEntries(formData.entries());
+                
+                enhancedUI.showToast('Saving settings...', 'info');
+                
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    enhancedUI.showToast('Settings saved successfully', 'success');
+                } catch (error) {
+                    enhancedUI.showToast('Failed to save settings', 'error');
+                }
+            }
+
+            autoSaveSettings() {
+                // Debounced auto-save
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = setTimeout(() => {
+                    enhancedUI.showToast('Settings auto-saved', 'info', 2000);
+                }, 2000);
+            }
+
+            loadSettings() {
+                // Load saved settings from localStorage or API
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                const themeSelect = document.querySelector('select[onchange*="handleThemeChange"]');
+                if (themeSelect) {
+                    themeSelect.value = savedTheme;
+                }
+            }
+
+            loadBillingData() {
+                // Load billing information
+                console.log('Loading billing data...');
+            }
+
+            loadIntegrationSettings() {
+                // Load integration-specific settings
+                console.log('Loading integration settings...');
+            }
+        }
+
+        // Global functions
+        function handleThemeChange(theme) {
+            if (enhancedUI) {
+                enhancedUI.setTheme(theme);
+                enhancedUI.showToast(`Theme changed to ${theme}`, 'success', 2000);
+            }
+        }
+
+        function togglePushNotifications(enabled) {
+            if (enabled) {
+                if ('Notification' in window) {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            enhancedUI.showToast('Push notifications enabled', 'success');
+                        } else {
+                            enhancedUI.showToast('Push notifications permission denied', 'warning');
+                            event.target.checked = false;
+                        }
+                    });
+                } else {
+                    enhancedUI.showToast('Push notifications not supported', 'error');
+                    event.target.checked = false;
+                }
+            } else {
+                enhancedUI.showToast('Push notifications disabled', 'info');
+            }
+        }
+
+        async function createAPIKey() {
+            const name = prompt('Enter a name for your API key:');
+            if (!name) return;
+
+            enhancedUI.showToast('Creating API key...', 'info');
+            
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                enhancedUI.showToast('API key created successfully', 'success');
+                settingsManager.loadAPIKeys();
+            } catch (error) {
+                enhancedUI.showToast('Failed to create API key', 'error');
+            }
+        }
+
+        function copyAPIKey(key) {
+            enhancedUI.copyToClipboard(key);
+        }
+
+        function editAPIKey(name) {
+            enhancedUI.showToast(`Editing ${name}...`, 'info');
+        }
+
+        async function deleteAPIKey(name) {
+            if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            enhancedUI.showToast('Deleting API key...', 'info');
+            
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                enhancedUI.showToast('API key deleted', 'success');
+                settingsManager.loadAPIKeys();
+            } catch (error) {
+                enhancedUI.showToast('Failed to delete API key', 'error');
+            }
+        }
+
+        async function exportAccountData() {
+            enhancedUI.showToast('Preparing data export...', 'info');
+            
+            try {
+                // Simulate data preparation
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Create mock export data
+                const exportData = {
+                    profile: {
+                        name: 'John Doe',
+                        email: 'john.doe@example.com',
+                        created: '2024-01-01'
+                    },
+                    integrations: [
+                        { name: 'OpenAI', status: 'active' },
+                        { name: 'Claude', status: 'active' }
+                    ],
+                    usage: {
+                        totalRequests: 1247,
+                        totalCost: 28.43
+                    },
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'account-data-export.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                enhancedUI.showToast('Account data exported successfully', 'success');
+            } catch (error) {
+                enhancedUI.showToast('Failed to export account data', 'error');
+            }
+        }
+
+        async function testAllIntegrations() {
+            enhancedUI.showToast('Testing all integrations...', 'info');
+            
+            try {
+                const response = await enhancedUI.request('/integration-test-all', { method: 'POST' });
+                if (response.success) {
+                    enhancedUI.showToast('All integrations tested successfully', 'success');
+                } else {
+                    enhancedUI.showToast('Some integration tests failed', 'warning');
+                }
+            } catch (error) {
+                enhancedUI.showToast('Failed to test integrations', 'error');
+            }
+        }
+
+        async function refreshAllIntegrations() {
+            enhancedUI.showToast('Refreshing all integrations...', 'info');
+            
+            try {
+                // Simulate refresh
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                enhancedUI.showToast('All integrations refreshed', 'success');
+            } catch (error) {
+                enhancedUI.showToast('Failed to refresh integrations', 'error');
+            }
+        }
+
+        function resetAllSettings() {
+            if (!confirm('This will reset all your settings to default values. Are you sure?')) {
+                return;
+            }
+            
+            enhancedUI.showToast('Resetting all settings...', 'info');
+            setTimeout(() => {
+                enhancedUI.showToast('All settings have been reset', 'success');
+            }, 1500);
+        }
+
+        function clearAllData() {
+            if (!confirm('This will permanently delete all your data. This action cannot be undone. Are you sure?')) {
+                return;
+            }
+            
+            const confirmation = prompt('Type "DELETE ALL DATA" to confirm:');
+            if (confirmation !== 'DELETE ALL DATA') {
+                enhancedUI.showToast('Data deletion cancelled', 'info');
+                return;
+            }
+            
+            enhancedUI.showToast('Clearing all data...', 'warning');
+            setTimeout(() => {
+                enhancedUI.showToast('All data has been cleared', 'success');
+            }, 2000);
+        }
+
+        function deleteAccount() {
+            if (!confirm('This will permanently delete your account and all associated data. This action cannot be undone. Are you sure?')) {
+                return;
+            }
+            
+            const confirmation = prompt('Type "DELETE MY ACCOUNT" to confirm:');
+            if (confirmation !== 'DELETE MY ACCOUNT') {
+                enhancedUI.showToast('Account deletion cancelled', 'info');
+                return;
+            }
+            
+            enhancedUI.showToast('Deleting account...', 'error');
+            setTimeout(() => {
+                alert('Account deletion initiated. You will receive an email confirmation.');
+            }, 2000);
+        }
+
+        // Initialize settings manager
+        let settingsManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            settingsManager = new SettingsManager();
+        });
+
+        // Handle URL hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash && document.getElementById(hash)) {
+                settingsManager.switchSection(hash);
+            }
+        });
+
+        // Initialize with URL hash if present
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash && document.getElementById(hash)) {
+                settingsManager.switchSection(hash);
+            }
+        });
+    </script>
+</body>
+</html>

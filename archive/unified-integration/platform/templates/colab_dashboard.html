@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colab Processing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 20px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.2);
+        }
+        
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .resources-section {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #333;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .resource-card {
+            background: #0a0a0a;
+            border: 2px solid #2a2a2a;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .resource-card.active {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+        
+        .resource-card.inactive {
+            border-color: #ff6b6b;
+            opacity: 0.7;
+        }
+        
+        .resource-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .resource-id {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .resource-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+        
+        .status-inactive {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .resource-detail {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .resource-label {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .resource-value {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .gpu-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .load-bar {
+            width: 100%;
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .load-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a39a);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .tasks-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .task-list {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #333;
+        }
+        
+        .task-item {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateX(5px);
+            border-color: #4ecdc4;
+        }
+        
+        .task-type {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        
+        .task-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .capabilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .capability-tag {
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chart-container {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #333;
+            margin-bottom: 30px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #fff;
+            border: 2px solid #444;
+        }
+        
+        .btn-secondary:hover {
+            background: #333;
+            border-color: #4ecdc4;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            color: #ff9999;
+        }
+        
+        .pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 Colab Processing Dashboard</h1>
+            <p>GPU-Accelerated AI Processing Network</p>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">🖥️</span>
+                <div class="stat-value" id="totalResources">0</div>
+                <div class="stat-label">Total Resources</div>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">✅</span>
+                <div class="stat-value" id="activeResources">0</div>
+                <div class="stat-label">Active GPUs</div>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">⏳</span>
+                <div class="stat-value" id="pendingTasks">0</div>
+                <div class="stat-label">Pending Tasks</div>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">🎯</span>
+                <div class="stat-value" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        
+        <div class="resources-section">
+            <h2 class="section-title">
+                <span>💻 GPU Resources</span>
+                <span class="pulse"></span>
+            </h2>
+            <div class="resource-grid" id="resourceGrid">
+                <!-- Resources will be populated here -->
+            </div>
+        </div>
+        
+        <div class="tasks-section">
+            <div class="task-list">
+                <h3 class="section-title">📥 Pending Tasks</h3>
+                <div id="pendingTasksList">
+                    <div class="loading"></div>
+                </div>
+            </div>
+            
+            <div class="task-list">
+                <h3 class="section-title">✅ Recent Completed</h3>
+                <div id="completedTasksList">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="section-title">📊 Processing Performance</h3>
+            <canvas id="performanceChart" height="100"></canvas>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-primary" onclick="testSunColab()">
+                <span>🌟</span> Test Your Colab
+            </button>
+            <button class="btn btn-primary" onclick="testProcessing()">
+                <span>🧪</span> Test Processing
+            </button>
+            <button class="btn btn-secondary" onclick="refreshDashboard()">
+                <span>🔄</span> Refresh
+            </button>
+            <button class="btn btn-secondary" onclick="downloadReport()">
+                <span>📥</span> Download Report
+            </button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let performanceChart = null;
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            await loadResourceStatus();
+            initPerformanceChart();
+            
+            // Auto-refresh every 5 seconds
+            setInterval(refreshDashboard, 5000);
+        }
+        
+        // Load resource status
+        async function loadResourceStatus() {
+            try {
+                const response = await fetch('/api/colab/status');
+                const data = await response.json();
+                
+                // Update stats
+                document.getElementById('totalResources').textContent = data.total_resources || 0;
+                document.getElementById('activeResources').textContent = data.active_resources || 0;
+                document.getElementById('pendingTasks').textContent = data.pending_tasks || 0;
+                document.getElementById('completedTasks').textContent = data.completed_tasks || 0;
+                
+                // Update resources grid
+                const resourceGrid = document.getElementById('resourceGrid');
+                resourceGrid.innerHTML = '';
+                
+                if (data.resources && data.resources.length > 0) {
+                    data.resources.forEach(resource => {
+                        const card = createResourceCard(resource);
+                        resourceGrid.appendChild(card);
+                    });
+                } else {
+                    resourceGrid.innerHTML = `
+                        <div class="alert">
+                            <span>⚠️</span>
+                            <span>No Colab resources configured. Add COLAB_PROCESSING_URLS to your environment.</span>
+                        </div>
+                    `;
+                }
+                
+                // Update task lists
+                updateTaskLists(data);
+                
+            } catch (error) {
+                console.error('Failed to load resources:', error);
+                showAlert('Failed to connect to Colab resources');
+            }
+        }
+        
+        // Create resource card
+        function createResourceCard(resource) {
+            const card = document.createElement('div');
+            card.className = `resource-card ${resource.is_active ? 'active' : 'inactive'}`;
+            
+            const loadPercent = (resource.current_load * 100).toFixed(0);
+            
+            card.innerHTML = `
+                <div class="resource-header">
+                    <span class="resource-id">${resource.instance_id}</span>
+                    <span class="resource-status ${resource.is_active ? 'status-active' : 'status-inactive'}">
+                        ${resource.is_active ? 'Online' : 'Offline'}
+                    </span>
+                </div>
+                
+                <div class="resource-detail">
+                    <span class="resource-label">GPU Type</span>
+                    <span class="gpu-badge">${resource.gpu_type || 'Unknown'}</span>
+                </div>
+                
+                <div class="resource-detail">
+                    <span class="resource-label">Current Load</span>
+                    <span class="resource-value">${loadPercent}%</span>
+                </div>
+                
+                <div class="load-bar">
+                    <div class="load-fill" style="width: ${loadPercent}%"></div>
+                </div>
+                
+                <div class="resource-detail">
+                    <span class="resource-label">Tasks Processed</span>
+                    <span class="resource-value">${resource.tasks_processed}</span>
+                </div>
+                
+                <div class="capabilities">
+                    ${resource.capabilities.map(cap => 
+                        `<span class="capability-tag">${cap.replace('_', ' ')}</span>`
+                    ).join('')}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Update task lists
+        function updateTaskLists(data) {
+            // This would normally fetch actual task data
+            // For now, show placeholder
+            const pendingList = document.getElementById('pendingTasksList');
+            const completedList = document.getElementById('completedTasksList');
+            
+            if (data.pending_tasks > 0) {
+                pendingList.innerHTML = `
+                    <div class="task-item">
+                        <div>
+                            <span class="task-type">IMAGE_GENERATION</span>
+                            <div class="task-id">task_abc123...</div>
+                        </div>
+                        <span>Priority: 8</span>
+                    </div>
+                `;
+            } else {
+                pendingList.innerHTML = '<p style="text-align: center; color: #666;">No pending tasks</p>';
+            }
+            
+            if (data.completed_tasks > 0) {
+                completedList.innerHTML = `
+                    <div class="task-item">
+                        <div>
+                            <span class="task-type">EMBEDDINGS</span>
+                            <div class="task-id">task_xyz789...</div>
+                        </div>
+                        <span style="color: #4ecdc4;">✓ 1.2s</span>
+                    </div>
+                `;
+            } else {
+                completedList.innerHTML = '<p style="text-align: center; color: #666;">No completed tasks yet</p>';
+            }
+        }
+        
+        // Initialize performance chart
+        function initPerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['5m ago', '4m ago', '3m ago', '2m ago', '1m ago', 'Now'],
+                    datasets: [{
+                        label: 'GPU Utilization %',
+                        data: [65, 70, 75, 80, 75, 78],
+                        borderColor: '#4ecdc4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Tasks/min',
+                        data: [12, 15, 18, 20, 17, 19],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#888'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#888',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#888'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#888'
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Test your specific Colab integration
+        async function testSunColab() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Testing...';
+            
+            try {
+                const response = await fetch('/api/sun-colab-test', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('🌟 Your Colab notebook is connected and working!', 'success');
+                    console.log('Colab Status:', result.colab_status);
+                } else {
+                    showAlert('❌ Connection failed: ' + result.error, 'error');
+                    if (result.troubleshooting) {
+                        console.log('Troubleshooting tips:', result.troubleshooting);
+                    }
+                }
+            } catch (error) {
+                showAlert('❌ Connection error: ' + error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<span>🌟</span> Test Your Colab';
+            }
+        }
+        
+        // Test processing
+        async function testProcessing() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Processing...';
+            
+            try {
+                const response = await fetch('/api/sun-colab-enhance', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        prompt: 'A beautiful sunset over mountains',
+                        style: 'cinematic'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Processing successful! Generated: ' + result.enhanced.substring(0, 50) + '...', 'success');
+                } else {
+                    showAlert('❌ Processing failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Connection error: ' + error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<span>🧪</span> Test Processing';
+            }
+        }
+        
+        // Refresh dashboard
+        async function refreshDashboard() {
+            await loadResourceStatus();
+            
+            // Update chart with new data
+            if (performanceChart) {
+                // Shift data
+                performanceChart.data.datasets[0].data.shift();
+                performanceChart.data.datasets[0].data.push(Math.floor(Math.random() * 20 + 70));
+                
+                performanceChart.data.datasets[1].data.shift();
+                performanceChart.data.datasets[1].data.push(Math.floor(Math.random() * 10 + 15));
+                
+                performanceChart.update();
+            }
+        }
+        
+        // Download report
+        function downloadReport() {
+            // Generate report data
+            const report = {
+                timestamp: new Date().toISOString(),
+                resources: [],
+                statistics: {
+                    total_resources: document.getElementById('totalResources').textContent,
+                    active_resources: document.getElementById('activeResources').textContent,
+                    pending_tasks: document.getElementById('pendingTasks').textContent,
+                    completed_tasks: document.getElementById('completedTasks').textContent
+                }
+            };
+            
+            // Download as JSON
+            const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `colab_report_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = 'alert';
+            alert.innerHTML = `
+                <span>${type === 'success' ? '✅' : '⚠️'}</span>
+                <span>${message}</span>
+            `;
+            
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

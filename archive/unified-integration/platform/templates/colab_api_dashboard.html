@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colab Direct API Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-healthy { background: #4ecdc4; }
+        .status-warning { background: #ffd93d; }
+        .status-error { background: #ff6b6b; }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .test-success {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid #4ecdc4;
+        }
+        
+        .test-error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .credentials-form {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .info-box {
+            background: rgba(69, 183, 209, 0.2);
+            border: 1px solid #45b7d1;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 5px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 Colab Direct API Dashboard</h1>
+            <p>Direct integration with your Colab notebook using API credentials</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('status')">📊 Status</button>
+            <button class="tab" onclick="switchTab('setup')">⚙️ Setup</button>
+            <button class="tab" onclick="switchTab('testing')">🧪 Testing</button>
+            <button class="tab" onclick="switchTab('advanced')">🔧 Advanced</button>
+        </div>
+        
+        <!-- Status Tab -->
+        <div id="status" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>📡 Connection Status</h3>
+                    <div id="connectionStatus">
+                        <span class="status-indicator status-warning"></span>
+                        <span>Checking connection...</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="checkConnection()">🔄 Refresh Status</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🎯 Notebook Info</h3>
+                    <div id="notebookInfo">
+                        <p><strong>Notebook ID:</strong> 1EwfBj0nC9St-2hB1bv2zGWWDTcS4slsx</p>
+                        <p><strong>Connection Method:</strong> <span id="connectionMethod">Direct API</span></p>
+                        <p><strong>Last Health Check:</strong> <span id="lastHealthCheck">Never</span></p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>⚡ Performance Metrics</h3>
+                    <div id="performanceMetrics">
+                        <p><strong>GPU Available:</strong> <span id="gpuStatus">Unknown</span></p>
+                        <p><strong>Memory Usage:</strong> <span id="memoryUsage">Unknown</span></p>
+                        <p><strong>Active Tasks:</strong> <span id="activeTasks">0</span></p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔧 Quick Actions</h3>
+                    <button class="btn" onclick="testTextGeneration()">📝 Test Text Generation</button>
+                    <button class="btn" onclick="testImageGeneration()">🖼️ Test Image Generation</button>
+                    <button class="btn" onclick="initializeConnection()">🚀 Initialize Connection</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Setup Tab -->
+        <div id="setup" class="tab-content">
+            <div class="card">
+                <h3>⚙️ Credential Configuration</h3>
+                
+                <div class="info-box">
+                    <p><strong>🔑 Required Credentials:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Colab Runtime URL (from your notebook)</li>
+                        <li>API Token (from Google Cloud Console)</li>
+                        <li>Optional: Service Account Key for advanced features</li>
+                    </ul>
+                </div>
+                
+                <div class="credentials-form">
+                    <div class="form-group">
+                        <label>Colab Runtime URL:</label>
+                        <input type="text" id="runtimeUrl" placeholder="https://colab.research.google.com/v2/external/..." />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>API Token:</label>
+                        <input type="password" id="apiToken" placeholder="your_colab_api_token_here" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Google Drive Folder ID (Optional):</label>
+                        <input type="text" id="driveFolderId" placeholder="1ABC123..." />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Service Account Key (Optional):</label>
+                        <textarea id="serviceAccountKey" rows="4" placeholder="Base64 encoded service account JSON..."></textarea>
+                    </div>
+                    
+                    <button class="btn" onclick="saveCredentials()">💾 Save Credentials</button>
+                    <button class="btn btn-secondary" onclick="testCredentials()">🧪 Test Connection</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>📝 Text Generation Test</h3>
+                    <div class="test-section">
+                        <div class="form-group">
+                            <label>Prompt:</label>
+                            <input type="text" id="textPrompt" value="A beautiful sunset over mountains" />
+                        </div>
+                        <div class="form-group">
+                            <label>Style:</label>
+                            <select id="textStyle" style="width: 100%; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                                <option value="creative">Creative</option>
+                                <option value="cinematic">Cinematic</option>
+                                <option value="artistic">Artistic</option>
+                                <option value="dramatic">Dramatic</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="runTextTest()">🚀 Run Test</button>
+                        <div id="textTestResult" class="test-result" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🖼️ Image Generation Test</h3>
+                    <div class="test-section">
+                        <div class="form-group">
+                            <label>Prompt:</label>
+                            <input type="text" id="imagePrompt" value="A mystical forest with glowing trees" />
+                        </div>
+                        <div class="form-group">
+                            <label>Style:</label>
+                            <select id="imageStyle" style="width: 100%; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                                <option value="photorealistic">Photorealistic</option>
+                                <option value="artistic">Artistic</option>
+                                <option value="cinematic">Cinematic</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="runImageTest()">🎨 Run Test</button>
+                        <div id="imageTestResult" class="test-result" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>⚡ Custom Code Execution</h3>
+                    <div class="test-section">
+                        <div class="form-group">
+                            <label>Python Code:</label>
+                            <textarea id="customCode" rows="6" placeholder="import torch
+print(f'GPU Available: {torch.cuda.is_available()}')
+print(f'GPU Name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else None}')"></textarea>
+                        </div>
+                        <button class="btn" onclick="runCustomCode()">⚡ Execute</button>
+                        <div id="customCodeResult" class="test-result" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔄 Performance Benchmark</h3>
+                    <div class="test-section">
+                        <button class="btn" onclick="runBenchmark()">🏃 Run Benchmark</button>
+                        <div id="benchmarkResult" class="test-result" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Tab -->
+        <div id="advanced" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🔧 System Configuration</h3>
+                    <div class="info-box">
+                        <p><strong>Environment Variables:</strong></p>
+                        <pre style="font-size: 12px; margin: 10px 0;">
+COLAB_RUNTIME_URL=your_runtime_url
+COLAB_API_TOKEN=your_api_token
+COLAB_NOTEBOOK_ID=1EwfBj0nC9St-2hB1bv2zGWWDTcS4slsx
+GOOGLE_DRIVE_FOLDER_ID=your_folder_id
+GOOGLE_SERVICE_ACCOUNT_KEY=your_service_account</pre>
+                    </div>
+                    <button class="btn" onclick="exportConfig()">📤 Export Config</button>
+                    <button class="btn btn-secondary" onclick="importConfig()">📥 Import Config</button>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Connection Diagnostics</h3>
+                    <button class="btn" onclick="runDiagnostics()">🔍 Run Full Diagnostics</button>
+                    <div id="diagnosticsResult" class="test-result" style="display: none;"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>📚 API Documentation</h3>
+                    <div style="line-height: 1.6;">
+                        <p><strong>Available Endpoints:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li><code>/api/colab-direct/status</code> - System status</li>
+                            <li><code>/api/colab-direct/health</code> - Health check</li>
+                            <li><code>/api/colab-direct/generate-text</code> - Text generation</li>
+                            <li><code>/api/colab-direct/generate-image</code> - Image generation</li>
+                            <li><code>/api/colab-direct/execute-code</code> - Code execution</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        // Connection status check
+        async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.innerHTML = '<span class="loading"></span> Checking...';
+            
+            try {
+                const response = await fetch('/api/colab-direct/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.innerHTML = '<span class="status-indicator status-healthy"></span>Connected & Healthy';
+                    updateSystemInfo(data.status);
+                } else {
+                    statusEl.innerHTML = '<span class="status-indicator status-error"></span>Connection Failed';
+                }
+            } catch (error) {
+                statusEl.innerHTML = '<span class="status-indicator status-error"></span>Connection Error';
+            }
+        }
+        
+        // Update system information
+        function updateSystemInfo(status) {
+            document.getElementById('connectionMethod').textContent = status.connection_type || 'Direct API';
+            document.getElementById('lastHealthCheck').textContent = new Date().toLocaleTimeString();
+            document.getElementById('activeTasks').textContent = status.active_tasks || 0;
+            
+            if (status.runtime_status) {
+                document.getElementById('gpuStatus').textContent = status.runtime_status.gpu_available ? 'Available' : 'Not Available';
+                document.getElementById('memoryUsage').textContent = status.runtime_status.memory_usage || 'Unknown';
+            }
+        }
+        
+        // Initialize connection
+        async function initializeConnection() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Initializing...';
+            
+            try {
+                const response = await fetch('/api/colab-direct/initialize', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Connection initialized successfully!');
+                    checkConnection();
+                } else {
+                    alert('❌ Initialization failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Initialize Connection';
+            }
+        }
+        
+        // Test text generation
+        async function testTextGeneration() {
+            await runTest('/api/colab-direct/generate-text', {
+                prompt: 'A beautiful mountain landscape at sunset',
+                style: 'cinematic'
+            }, 'Quick text generation test completed!');
+        }
+        
+        // Test image generation
+        async function testImageGeneration() {
+            await runTest('/api/colab-direct/generate-image', {
+                prompt: 'A mystical forest scene',
+                style: 'artistic'
+            }, 'Quick image generation test completed!');
+        }
+        
+        // Run text test with custom input
+        async function runTextTest() {
+            const prompt = document.getElementById('textPrompt').value;
+            const style = document.getElementById('textStyle').value;
+            
+            const result = await runTest('/api/colab-direct/generate-text', {prompt, style});
+            document.getElementById('textTestResult').style.display = 'block';
+            document.getElementById('textTestResult').className = 'test-result test-success';
+            document.getElementById('textTestResult').textContent = JSON.stringify(result, null, 2);
+        }
+        
+        // Run image test with custom input
+        async function runImageTest() {
+            const prompt = document.getElementById('imagePrompt').value;
+            const style = document.getElementById('imageStyle').value;
+            
+            const result = await runTest('/api/colab-direct/generate-image', {prompt, style});
+            document.getElementById('imageTestResult').style.display = 'block';
+            document.getElementById('imageTestResult').className = 'test-result test-success';
+            document.getElementById('imageTestResult').textContent = JSON.stringify(result, null, 2);
+        }
+        
+        // Run custom code
+        async function runCustomCode() {
+            const code = document.getElementById('customCode').value;
+            
+            const result = await runTest('/api/colab-direct/execute-code', {code});
+            document.getElementById('customCodeResult').style.display = 'block';
+            document.getElementById('customCodeResult').className = 'test-result test-success';
+            document.getElementById('customCodeResult').textContent = JSON.stringify(result, null, 2);
+        }
+        
+        // Generic test runner
+        async function runTest(endpoint, data, successMessage) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (successMessage) {
+                    alert(successMessage);
+                }
+                
+                return result;
+                
+            } catch (error) {
+                alert('❌ Test failed: ' + error.message);
+                return {error: error.message};
+            }
+        }
+        
+        // Run benchmark
+        async function runBenchmark() {
+            const resultEl = document.getElementById('benchmarkResult');
+            resultEl.style.display = 'block';
+            resultEl.className = 'test-result test-success';
+            resultEl.textContent = 'Running benchmark tests...\n';
+            
+            const tests = [
+                {name: 'Health Check', endpoint: '/api/colab-direct/health'},
+                {name: 'Text Generation', endpoint: '/api/colab-direct/generate-text', data: {prompt: 'test', style: 'creative'}},
+                {name: 'Code Execution', endpoint: '/api/colab-direct/execute-code', data: {code: 'print("Hello from Colab!")'}}
+            ];
+            
+            for (const test of tests) {
+                const start = Date.now();
+                try {
+                    const method = test.data ? 'POST' : 'GET';
+                    const response = await fetch(test.endpoint, {
+                        method,
+                        headers: test.data ? {'Content-Type': 'application/json'} : {},
+                        body: test.data ? JSON.stringify(test.data) : undefined
+                    });
+                    const time = Date.now() - start;
+                    const data = await response.json();
+                    
+                    resultEl.textContent += `✅ ${test.name}: ${time}ms\n`;
+                } catch (error) {
+                    resultEl.textContent += `❌ ${test.name}: Failed (${error.message})\n`;
+                }
+            }
+            
+            resultEl.textContent += '\nBenchmark completed!';
+        }
+        
+        // Save credentials (placeholder)
+        function saveCredentials() {
+            alert('💾 Credentials saved! (Note: This is a demo - credentials are not actually saved)');
+        }
+        
+        // Test credentials
+        async function testCredentials() {
+            alert('🧪 Testing credentials...');
+            await checkConnection();
+        }
+        
+        // Export config
+        function exportConfig() {
+            const config = {
+                runtime_url: document.getElementById('runtimeUrl').value,
+                api_token: document.getElementById('apiToken').value,
+                drive_folder_id: document.getElementById('driveFolderId').value,
+                service_account_key: document.getElementById('serviceAccountKey').value
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'colab_config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Import config (placeholder)
+        function importConfig() {
+            alert('📥 Import functionality would load a config file here');
+        }
+        
+        // Run diagnostics
+        async function runDiagnostics() {
+            const resultEl = document.getElementById('diagnosticsResult');
+            resultEl.style.display = 'block';
+            resultEl.className = 'test-result test-success';
+            resultEl.textContent = 'Running comprehensive diagnostics...\n\n';
+            
+            // Check all endpoints
+            const endpoints = [
+                '/api/colab-direct/status',
+                '/api/colab-direct/health'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    resultEl.textContent += `✅ ${endpoint}: OK\n`;
+                    resultEl.textContent += `   Response: ${JSON.stringify(data, null, 2)}\n\n`;
+                } catch (error) {
+                    resultEl.textContent += `❌ ${endpoint}: ${error.message}\n\n`;
+                }
+            }
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkConnection();
+        });
+    </script>
+</body>
+</html>

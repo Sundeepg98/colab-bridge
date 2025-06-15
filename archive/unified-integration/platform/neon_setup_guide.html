@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neon PostgreSQL Setup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .step {
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        code {
+            background: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .connection-string {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Neon PostgreSQL Setup Guide</h1>
+    
+    <div class="step">
+        <h2>Step 1: Create Your FREE Neon Account</h2>
+        <p>Click the button below to open Neon's signup page:</p>
+        <button onclick="window.open('https://console.neon.tech/signup', '_blank')">
+            Open Neon Signup →
+        </button>
+        <p><small>Or visit: <code>https://console.neon.tech/signup</code></small></p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 2: Sign Up (30 seconds)</h2>
+        <ul>
+            <li>Click <strong>"Sign up with GitHub"</strong> (fastest)</li>
+            <li>Or use your email</li>
+            <li>It's completely FREE - no credit card needed!</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h2>Step 3: Get Your Connection String</h2>
+        <p>After signup, you'll see your dashboard with a connection box:</p>
+        <ol>
+            <li>Look for <strong>"Connection string"</strong> section</li>
+            <li>Click <strong>"Show password"</strong></li>
+            <li>Click the <strong>copy button</strong> to copy the entire string</li>
+        </ol>
+        <p>It will look like this:</p>
+        <div class="connection-string">
+            postgresql://username:password@ep-something-123456.us-east-2.aws.neon.tech/neondb
+        </div>
+    </div>
+    
+    <div class="step">
+        <h2>Step 4: Configure Your App</h2>
+        <p>Once you have your connection string:</p>
+        <ol>
+            <li>Return to your terminal</li>
+            <li>Run: <code>python3 complete_neon_setup.py</code></li>
+            <li>Paste your connection string when prompted</li>
+        </ol>
+    </div>
+    
+    <div class="warning">
+        <strong>⚠️ Important:</strong> Make sure to copy the ENTIRE connection string including the password!
+    </div>
+    
+    <div class="step" style="background: #e8f5e9;">
+        <h2>✅ What You Get for FREE:</h2>
+        <ul>
+            <li>3GB storage (enough for ~1 million records)</li>
+            <li>Always-on database</li>
+            <li>Automatic daily backups</li>
+            <li>SSL encryption</li>
+            <li>Database branching</li>
+            <li>No credit card required</li>
+        </ul>
+    </div>
+</body>
+</html>

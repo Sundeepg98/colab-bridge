@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Integration Setup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .platform-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .platform-card:hover {
+            transform: translateY(-5px);
+        }
+        .platform-card.hidden {
+            display: none;
+        }
+        .platform-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .platform-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+        .platform-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .platform-desc {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .api-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .add-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .add-btn:hover {
+            background: #5a67d8;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Quick Integration Setup - Add Mainstream Platforms</h1>
+    
+    <!-- Service Type Tabs -->
+    <div style="display: flex; justify-content: center; margin-bottom: 40px; gap: 10px;">
+        <button class="tab-btn active" onclick="showCategory('all')">
+            <i class="fas fa-th"></i> All Services
+        </button>
+        <button class="tab-btn" onclick="showCategory('chatbot')">
+            <i class="fas fa-comments"></i> Chatbots
+        </button>
+        <button class="tab-btn" onclick="showCategory('simulator')">
+            <i class="fas fa-magic"></i> Simulators
+        </button>
+    </div>
+    
+    <style>
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .service-type-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .chatbot-badge {
+            background: #3498db;
+        }
+        .simulator-badge {
+            background: #9b59b6;
+        }
+    </style>
+    
+    <div class="integration-grid">
+        <!-- OpenAI -->
+        <div class="platform-card" data-category="chatbot">
+            <span class="service-type-badge chatbot-badge">CHATBOT</span>
+            <div class="platform-header">
+                <div class="platform-icon">🧠</div>
+                <div class="platform-name">OpenAI</div>
+            </div>
+            <div class="platform-desc">GPT-4, GPT-3.5 - Text Generation</div>
+            <input type="password" class="api-input" placeholder="sk-..." id="openai-key">
+            <button class="add-btn" onclick="addIntegration('openai')">Add OpenAI</button>
+        </div>
+
+        <!-- Stable Diffusion -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎨</div>
+                <div class="platform-name">Stable Diffusion</div>
+            </div>
+            <div class="platform-desc">SDXL, SD 2.1 - Image Generation</div>
+            <input type="password" class="api-input" placeholder="API Key" id="stability-key">
+            <button class="add-btn" onclick="addIntegration('stability')">Add Stable Diffusion</button>
+        </div>
+
+        <!-- Anthropic Claude -->
+        <div class="platform-card" data-category="chatbot">
+            <span class="service-type-badge chatbot-badge">CHATBOT</span>
+            <div class="platform-header">
+                <div class="platform-icon">🤖</div>
+                <div class="platform-name">Anthropic Claude</div>
+            </div>
+            <div class="platform-desc">Claude 3 - Conversational AI</div>
+            <input type="password" class="api-input" placeholder="sk-ant-..." id="anthropic-key">
+            <button class="add-btn" onclick="addIntegration('anthropic')">Add Claude</button>
+        </div>
+
+        <!-- Midjourney -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎭</div>
+                <div class="platform-name">Midjourney</div>
+            </div>
+            <div class="platform-desc">V6, Niji - Image Generation</div>
+            <input type="password" class="api-input" placeholder="API Key" id="midjourney-key">
+            <button class="add-btn" onclick="addIntegration('midjourney')">Add Midjourney</button>
+        </div>
+
+        <!-- RunwayML -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎬</div>
+                <div class="platform-name">RunwayML</div>
+            </div>
+            <div class="platform-desc">Gen-2 - Video Generation</div>
+            <input type="password" class="api-input" placeholder="API Key" id="runway-key">
+            <button class="add-btn" onclick="addIntegration('runway')">Add RunwayML</button>
+        </div>
+
+        <!-- Replicate -->
+        <div class="platform-card" data-category="both">
+            <span class="service-type-badge" style="background: #27ae60;">BOTH</span>
+            <div class="platform-header">
+                <div class="platform-icon">🔄</div>
+                <div class="platform-name">Replicate</div>
+            </div>
+            <div class="platform-desc">Text & Image Models</div>
+            <input type="password" class="api-input" placeholder="r8_..." id="replicate-key">
+            <button class="add-btn" onclick="addIntegration('replicate')">Add Replicate</button>
+        </div>
+
+        <!-- ElevenLabs -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎵</div>
+                <div class="platform-name">ElevenLabs</div>
+            </div>
+            <div class="platform-desc">Voice & Audio Generation</div>
+            <input type="password" class="api-input" placeholder="API Key" id="elevenlabs-key">
+            <button class="add-btn" onclick="addIntegration('elevenlabs')">Add ElevenLabs</button>
+        </div>
+
+        <!-- Hugging Face -->
+        <div class="platform-card" data-category="both">
+            <span class="service-type-badge" style="background: #27ae60;">BOTH</span>
+            <div class="platform-header">
+                <div class="platform-icon">🤗</div>
+                <div class="platform-name">Hugging Face</div>
+            </div>
+            <div class="platform-desc">Text & Image Models</div>
+            <input type="password" class="api-input" placeholder="hf_..." id="huggingface-key">
+            <button class="add-btn" onclick="addIntegration('huggingface')">Add Hugging Face</button>
+        </div>
+
+        <!-- Cohere -->
+        <div class="platform-card" data-category="chatbot">
+            <span class="service-type-badge chatbot-badge">CHATBOT</span>
+            <div class="platform-header">
+                <div class="platform-icon">💬</div>
+                <div class="platform-name">Cohere</div>
+            </div>
+            <div class="platform-desc">Command - Text Generation</div>
+            <input type="password" class="api-input" placeholder="API Key" id="cohere-key">
+            <button class="add-btn" onclick="addIntegration('cohere')">Add Cohere</button>
+        </div>
+        
+        <!-- DALL-E 3 -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎨</div>
+                <div class="platform-name">DALL-E 3</div>
+            </div>
+            <div class="platform-desc">OpenAI - Image Generation</div>
+            <input type="password" class="api-input" placeholder="OpenAI API Key" id="dalle-key">
+            <button class="add-btn" onclick="addIntegration('dalle')">Add DALL-E 3</button>
+        </div>
+        
+        <!-- LLaMA -->
+        <div class="platform-card" data-category="chatbot">
+            <span class="service-type-badge chatbot-badge">CHATBOT</span>
+            <div class="platform-header">
+                <div class="platform-icon">🦙</div>
+                <div class="platform-name">LLaMA</div>
+            </div>
+            <div class="platform-desc">Meta - Open Source LLM</div>
+            <input type="password" class="api-input" placeholder="API Endpoint" id="llama-key">
+            <button class="add-btn" onclick="addIntegration('llama')">Add LLaMA</button>
+        </div>
+        
+        <!-- Sora -->
+        <div class="platform-card" data-category="simulator">
+            <span class="service-type-badge simulator-badge">SIMULATOR</span>
+            <div class="platform-header">
+                <div class="platform-icon">🎬</div>
+                <div class="platform-name">Sora</div>
+            </div>
+            <div class="platform-desc">OpenAI - Video Generation (Coming Soon)</div>
+            <input type="password" class="api-input" placeholder="API Key" id="sora-key" disabled>
+            <button class="add-btn" onclick="addIntegration('sora')" disabled style="opacity: 0.5;">Coming Soon</button>
+        </div>
+    </div>
+
+    <script>
+        function showCategory(category) {
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide cards based on category
+            document.querySelectorAll('.platform-card').forEach(card => {
+                if (category === 'all') {
+                    card.classList.remove('hidden');
+                } else if (category === 'chatbot') {
+                    if (card.dataset.category === 'chatbot' || card.dataset.category === 'both') {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                } else if (category === 'simulator') {
+                    if (card.dataset.category === 'simulator' || card.dataset.category === 'both') {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        function addIntegration(platform) {
+            const keyInput = document.getElementById(platform + '-key');
+            const apiKey = keyInput.value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+
+            // Send to backend
+            fetch('/api/api-keys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    integration_name: platform,
+                    api_key: apiKey
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ ${platform} integration added successfully!`);
+                    keyInput.value = '';
+                    // Redirect to main dashboard
+                    setTimeout(() => {
+                        window.location.href = '/admin-enhanced';
+                    }, 1000);
+                } else {
+                    alert(`❌ Error: ${data.error || 'Failed to add integration'}`);
+                }
+            })
+            .catch(error => {
+                alert('❌ Network error: ' + error);
+            });
+        }
+    </script>
+</body>
+</html>

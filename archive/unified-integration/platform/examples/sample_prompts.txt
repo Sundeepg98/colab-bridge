@@ -1,0 +1,41 @@
+# Sample Sora AI Prompts
+
+## Cinematic Shots
+
+1. "Wide shot of a lone samurai walking through a bamboo forest, early morning mist, golden hour lighting, cinematic style, serene mood, slow tracking shot"
+
+2. "Close-up of raindrops hitting a puddle in slow motion, creating ripples, blue hour lighting, minimalist style, meditative mood, static shot"
+
+3. "Aerial shot of waves crashing against dramatic cliffs, sunset, dramatic lighting, documentary style, powerful mood, slow zoom out"
+
+## Action Sequences
+
+1. "Medium shot of a parkour athlete jumping between rooftops, handheld camera, urban setting at dusk, neon lighting, cyberpunk aesthetic, energetic mood"
+
+2. "Tracking shot of a motorcycle racing through neon-lit city streets, night time, wet pavement reflecting lights, cinematic style, intense mood, motion blur"
+
+3. "POV shot of a eagle soaring over mountain peaks, clear day, natural lighting, documentary style, freedom mood, smooth camera movement"
+
+## Artistic & Abstract
+
+1. "Extreme close-up of paint mixing in water, creating abstract patterns, studio lighting, stylized aesthetic, mesmerizing mood, static shot with time-lapse"
+
+2. "Orbital shot of geometric shapes morphing and transforming, gradient background, soft diffused lighting, minimalist style, contemplative mood"
+
+3. "Dutch angle shot of abandoned architecture being reclaimed by nature, golden hour, dramatic shadows, surrealistic style, mysterious mood"
+
+## Nature & Wildlife
+
+1. "Wide establishing shot of the Northern Lights dancing over a frozen landscape, night time, natural lighting, hyperrealistic style, awe-inspiring mood"
+
+2. "Close-up of a hummingbird feeding from a flower, slow motion, natural lighting, documentary style, delicate mood, shallow depth of field"
+
+3. "Time-lapse of clouds rolling over mountain peaks, changing from day to night, natural lighting, cinematic style, epic mood"
+
+## Sci-Fi & Fantasy
+
+1. "Medium shot of a astronaut walking on an alien planet with two suns, otherworldly landscape, harsh directional lighting, sci-fi aesthetic, exploratory mood"
+
+2. "Wide shot of a futuristic city with flying vehicles, night time, neon and holographic lighting, cyberpunk aesthetic, bustling mood, slow pan"
+
+3. "Close-up of a magical portal opening with sparks and energy, dark environment, dramatic lighting, fantasy style, mysterious mood, zoom in"

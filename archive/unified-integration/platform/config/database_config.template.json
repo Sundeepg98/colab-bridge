@@ -1,0 +1,12 @@
+{
+  "project_id": "your-neon-project-id",
+  "connection_string": "postgresql://username:password@host:port/database?sslmode=require",
+  "details": {
+    "username": "your_username", 
+    "host": "your-host.neon.tech",
+    "database": "your_database_name",
+    "project_url": "https://console.neon.tech/app/projects/your-project-id"
+  },
+  "created_at": "timestamp",
+  "note": "This is a template file. Copy to database_config.json and fill with your actual credentials. Never commit the real credentials file."
+}

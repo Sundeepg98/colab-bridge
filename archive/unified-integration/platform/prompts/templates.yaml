@@ -1,0 +1,59 @@
+templates:
+  nature:
+    - subject: "majestic mountains"
+      settings:
+        - "at sunrise with mist rolling through valleys"
+        - "during a thunderstorm with lightning"
+        - "reflected in a crystal clear lake"
+      camera_movements:
+        - "aerial"
+        - "slow zoom out"
+        - "orbiting"
+      
+  urban:
+    - subject: "bustling city intersection"
+      settings:
+        - "during rush hour in Tokyo"
+        - "on a rainy night with neon reflections"
+        - "from above showing traffic patterns"
+      styles:
+        - "cyberpunk"
+        - "noir"
+        - "hyperrealistic"
+  
+  character:
+    - subject: "a lone astronaut"
+      actions:
+        - "floating in space"
+        - "exploring an alien planet"
+        - "repairing a space station"
+      moods:
+        - "isolated"
+        - "wonder"
+        - "determination"
+  
+  abstract:
+    - subject: "flowing liquid metal"
+      actions:
+        - "morphing into geometric shapes"
+        - "reflecting rainbow colors"
+        - "defying gravity"
+      styles:
+        - "surreal"
+        - "minimalist"
+        - "stylized"
+
+modifiers:
+  technical:
+    - "shallow depth of field"
+    - "motion blur"
+    - "time-lapse"
+    - "slow motion"
+    - "tilt-shift effect"
+  
+  artistic:
+    - "painterly aesthetic"
+    - "film grain"
+    - "chromatic aberration"
+    - "lens flare"
+    - "volumetric lighting"

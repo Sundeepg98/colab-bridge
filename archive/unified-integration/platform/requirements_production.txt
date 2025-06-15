@@ -1,0 +1,77 @@
+# Core Flask application
+Flask==3.0.0
+Werkzeug==3.0.1
+Jinja2==3.1.2
+
+# Database
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Authentication & Security
+PyJWT==2.8.0
+bcrypt==4.1.2
+cryptography==41.0.8
+
+# Redis for caching and sessions
+redis==5.0.1
+Flask-Session==0.5.0
+
+# HTTP and API
+requests==2.31.0
+urllib3==2.1.0
+
+# Background tasks (optional)
+celery==5.3.4
+
+# Production server
+gunicorn==21.2.0
+
+# Rate limiting
+Flask-Limiter==3.5.0
+
+# Environment management
+python-decouple==3.8
+python-dotenv==1.0.0
+
+# Email support
+Flask-Mail==0.9.1
+
+# File uploads and validation
+python-magic==0.4.27
+Pillow==10.1.0
+
+# Logging and monitoring
+structlog==23.2.0
+
+# Development and testing (optional)
+pytest==7.4.3
+pytest-flask==1.3.0
+factory-boy==3.3.0
+
+# API documentation (optional)
+flask-restx==1.3.0
+
+# CORS support
+Flask-CORS==4.0.0
+
+# Form validation
+WTForms==3.1.1
+Flask-WTF==1.2.1
+
+# JSON Web Tokens
+PyJWT==2.8.0
+
+# Password strength validation
+password-strength==0.0.3
+
+# UUID utilities
+shortuuid==1.0.11
+
+# Date/time utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Utilities
+click==8.1.7
+markupsafe==2.1.3

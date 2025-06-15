@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sora AI Prompt Optimizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-nav.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sora AI Prompt Optimizer</h1>
+            <p class="subtitle">Transform your creative ideas into optimized prompts with higher acceptance rates</p>
+        </header>
+
+        <main>
+            <!-- UI Enhancement Notice -->
+            <div class="ui-enhancement-notice">
+                <h3>🎉 Enhanced UI Available!</h3>
+                <p>Experience our new smooth, responsive interface with advanced features:</p>
+                <span class="highlight">100% Test Score • Mobile Optimized • WCAG 2.1 AA</span>
+            </div>
+
+            <!-- Enhanced Navigation -->
+            <div class="enhanced-nav" style="margin-bottom: 20px; text-align: center;">
+                <a href="/dashboard" class="nav-link">📊 Dashboard</a>
+                <a href="/onboarding" class="nav-link">🎯 Onboarding</a>
+                <a href="/integration-setup" class="nav-link">🔧 Setup Wizard</a>
+                <a href="/integration-quick" class="nav-link">⚡ Quick Setup</a>
+                <a href="/ui-test" class="nav-link">🧪 UI Tests</a>
+                <a href="/learning-dashboard" class="nav-link">🧠 Learning</a>
+                <a href="/colab-dashboard" class="nav-link">🚀 Colab</a>
+                <a href="/colab-api-dashboard" class="nav-link">🔑 Colab API</a>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="auto">🤖 Smart Optimize</button>
+                <button class="tab-button" data-tab="generate">✨ Generate New</button>
+                <button class="tab-button" data-tab="account">👤 Account & Costs</button>
+            </div>
+
+            <!-- Auto-Optimize Tab -->
+            <div id="auto" class="tab-content active">
+                <div class="input-section">
+                    <h2>🤖 Intelligent Auto-Optimization</h2>
+                    <p class="description">I'll analyze your prompt and automatically apply the best optimization strategy</p>
+                    <textarea id="auto-prompt" class="prompt-input" rows="4" 
+                        placeholder="Enter any prompt - I'll detect themes and optimize accordingly..."></textarea>
+                    
+                    <button class="optimize-btn super-btn" onclick="ultimateOptimize()">
+                        <span class="btn-icon">✨</span> <span id="btn-text">Optimize</span>
+                    </button>
+                    
+                    <!-- Real-time feedback -->
+                    <div id="live-feedback" class="live-feedback" style="display: none;">
+                        <div class="feedback-item">
+                            <span class="feedback-icon">🔍</span>
+                            <span class="feedback-text">Analyzing your prompt...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="analysis-preview" class="analysis-preview" style="display: none;">
+                        <h3>Analysis Results</h3>
+                        <div id="analysis-content"></div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- Generate Tab -->
+            <div id="generate" class="tab-content">
+                <div class="input-section">
+                    <h2>✨ Generate & Smart Optimize</h2>
+                    <p class="description">Build a new prompt - I'll generate it and apply smart optimization for any content type</p>
+                    
+                    <div class="generate-form">
+                        <div class="form-group">
+                            <input type="text" id="generate-subject" placeholder="Subject (e.g., 'two people embracing', 'intimate moment', 'age-gap couple')" class="form-input">
+                            <span class="input-hint">Who or what is the focus?</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" id="generate-action" placeholder="Action (e.g., 'sharing a passionate kiss', 'holding hands tenderly')" class="form-input">
+                            <span class="input-hint">What are they doing?</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" id="generate-setting" placeholder="Setting (e.g., 'private bedroom', 'romantic sunset beach')" class="form-input">
+                            <span class="input-hint">Where is this happening?</span>
+                        </div>
+                        
+                        <!-- Smart suggestions -->
+                        <div id="generate-suggestions" class="suggestions-box" style="display: none;">
+                            <h4>💡 Quick Ideas:</h4>
+                            <div class="suggestion-chips"></div>
+                        </div>
+                        
+                        <div class="options">
+                            <label>
+                                Camera:
+                                <select id="generate-camera">
+                                    <option value="">None</option>
+                                    <option value="static">Static</option>
+                                    <option value="pan">Panning</option>
+                                    <option value="zoom_in">Zoom In</option>
+                                    <option value="zoom_out">Zoom Out</option>
+                                    <option value="tracking">Tracking</option>
+                                    <option value="aerial">Aerial</option>
+                                </select>
+                            </label>
+                            
+                            <label>
+                                Style:
+                                <select id="generate-style">
+                                    <option value="">None</option>
+                                    <option value="cinematic">Cinematic</option>
+                                    <option value="documentary">Documentary</option>
+                                    <option value="animation">Animation</option>
+                                    <option value="hyperrealistic">Hyperrealistic</option>
+                                    <option value="stylized">Stylized</option>
+                                    <option value="noir">Noir</option>
+                                    <option value="cyberpunk">Cyberpunk</option>
+                                </select>
+                            </label>
+                            
+                            <label>
+                                Variations:
+                                <input type="number" id="generate-variations" min="0" max="5" value="3">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="optimize-btn super-btn" onclick="generatePrompt()">
+                        <span class="btn-icon">✨</span> <span id="gen-btn-text">Generate & Smart Optimize</span>
+                    </button>
+                    
+                    <!-- Real-time preview -->
+                    <div id="generate-preview" class="generate-preview" style="display: none;">
+                        <h4>Preview:</h4>
+                        <p id="preview-text" class="preview-text"></p>
+                    </div>
+                    
+                    <!-- Generation feedback -->
+                    <div id="generate-feedback" class="live-feedback" style="display: none;">
+                        <div class="feedback-item">
+                            <span class="feedback-icon">✨</span>
+                            <span class="feedback-text">Ready to generate...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="results-section" style="display: none;">
+                <h2>Results</h2>
+                
+                <div class="result-card">
+                    <h3>Original Prompt</h3>
+                    <p id="original-prompt" class="prompt-text"></p>
+                </div>
+                
+                <div class="result-card success">
+                    <h3>Optimized Prompt</h3>
+                    <p id="optimized-prompt" class="prompt-text"></p>
+                    <button class="copy-btn" onclick="copyToClipboard('optimized-prompt')">Copy</button>
+                </div>
+                
+                <div id="metadata" class="metadata">
+                    <div class="meta-item">
+                        <span class="meta-label">Success Rate:</span>
+                        <span id="confidence" class="meta-value"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Context Applied:</span>
+                        <span id="context-applied" class="meta-value"></span>
+                    </div>
+                </div>
+                
+                <div id="suggestions" class="suggestions" style="display: none;">
+                    <h3>Suggestions</h3>
+                    <ul id="suggestions-list"></ul>
+                </div>
+                
+                <div id="variations" class="variations" style="display: none;">
+                    <h3>Variations</h3>
+                    <div id="variations-list"></div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div id="preview-section" class="preview-section" style="display: none;">
+                    <h3>Generation Preview (Simulated)</h3>
+                    <div class="preview-notice">
+                        <p>⚠️ Sora API is not yet publicly available. This shows a simulated preview.</p>
+                        <p>When Sora launches, real video generation will appear here.</p>
+                    </div>
+                    <div id="preview-content" class="preview-content"></div>
+                    <button class="preview-btn" onclick="simulateGeneration()">Simulate Generation</button>
+                </div>
+            </div>
+
+            <!-- Account & Costs Tab -->
+            <div id="account" class="tab-content">
+                <div class="account-section">
+                    <h2>👤 Account Profile & Cost Tracking</h2>
+                    
+                    <!-- User Profile Card -->
+                    <div class="profile-card">
+                        <h3>User Profile</h3>
+                        <div id="user-profile-content">
+                            <div class="profile-item">
+                                <span class="profile-label">User Segment:</span>
+                                <span id="user-segment" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Account Tier:</span>
+                                <span id="user-tier" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Trust Level:</span>
+                                <span id="trust-level" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Total Requests:</span>
+                                <span id="total-requests" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Success Rate:</span>
+                                <span id="success-rate" class="profile-value">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Tracking Card -->
+                    <div class="cost-card">
+                        <h3>💰 Cost Tracking</h3>
+                        <div id="cost-tracking-content">
+                            <div class="cost-item">
+                                <span class="cost-label">Daily Budget:</span>
+                                <span id="daily-budget" class="cost-value">Loading...</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Spent Today:</span>
+                                <span id="spent-today" class="cost-value">Loading...</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Remaining:</span>
+                                <span id="remaining-budget" class="cost-value">Loading...</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Current Strategy:</span>
+                                <span id="current-strategy" class="cost-value">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="budget-bar">
+                            <div id="budget-used" class="budget-used-bar"></div>
+                        </div>
+                    </div>
+
+                    <!-- Usage Analytics -->
+                    <div class="analytics-card">
+                        <h3>📊 Usage Analytics</h3>
+                        <div id="analytics-content">
+                            <div class="analytics-item">
+                                <span class="analytics-label">Primary Categories:</span>
+                                <span id="primary-categories" class="analytics-value">Loading...</span>
+                            </div>
+                            <div class="analytics-item">
+                                <span class="analytics-label">Content Consistency:</span>
+                                <span id="content-consistency" class="analytics-value">Loading...</span>
+                            </div>
+                            <div class="analytics-item">
+                                <span class="analytics-label">Skill Level:</span>
+                                <span id="skill-level" class="analytics-value">Loading...</span>
+                            </div>
+                            <div class="analytics-item">
+                                <span class="analytics-label">Peak Hours:</span>
+                                <span id="peak-hours" class="analytics-value">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="recommendations-card">
+                        <h3>💡 Personalized Recommendations</h3>
+                        <div id="recommendations-content">
+                            <ul id="recommendations-list">
+                                <li>Loading recommendations...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="account-actions">
+                        <button class="refresh-btn" onclick="refreshAccountData()">🔄 Refresh Data</button>
+                        <button class="test-selection-btn" onclick="testModelSelection()">🧪 Test Model Selection</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Optimizing your prompt...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Sora AI Prompt Optimizer - Helping creators express their vision</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

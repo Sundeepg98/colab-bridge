@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to AI Platform - Getting Started</title>
+    <link rel="stylesheet" href="/static/css/enhanced.css">
+    <style>
+        .onboarding-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .onboarding-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: #e2e8f0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 25%;
+            transition: width 0.5s ease;
+        }
+        
+        .step-content {
+            padding: 60px;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .step-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .step-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.2s forwards;
+        }
+        
+        .step-description {
+            font-size: 18px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.4s forwards;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.6s forwards;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 13px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .feature-item {
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .feature-item:nth-child(1) { animation-delay: 0.1s; }
+        .feature-item:nth-child(2) { animation-delay: 0.2s; }
+        .feature-item:nth-child(3) { animation-delay: 0.3s; }
+        .feature-item:nth-child(4) { animation-delay: 0.4s; }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin: 0 auto 15px;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+        
+        .feature-desc {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .integration-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .integration-item {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .integration-item:nth-child(1) { animation-delay: 0.1s; }
+        .integration-item:nth-child(2) { animation-delay: 0.2s; }
+        .integration-item:nth-child(3) { animation-delay: 0.3s; }
+        .integration-item:nth-child(4) { animation-delay: 0.4s; }
+        .integration-item:nth-child(5) { animation-delay: 0.5s; }
+        .integration-item:nth-child(6) { animation-delay: 0.6s; }
+        
+        .integration-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .integration-logo {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .integration-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .skip-link:hover {
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .step-content {
+                padding: 40px 30px;
+            }
+            
+            .step-title {
+                font-size: 24px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .integration-preview {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-container">
+        <div class="onboarding-card">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <a href="/dashboard" class="skip-link">Skip tour →</a>
+            
+            <!-- Step 1: Welcome -->
+            <div class="step-content" id="step1">
+                <div class="step-icon">🚀</div>
+                <h1 class="step-title">Welcome to AI Platform!</h1>
+                <p class="step-description">
+                    Your unified gateway to the world's most powerful AI services.<br>
+                    Connect your own API keys and start creating amazing content in minutes.
+                </p>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-title">AI Chatbots</div>
+                        <div class="feature-desc">GPT-4, Claude, Gemini</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Image Generation</div>
+                        <div class="feature-desc">DALL-E, Midjourney, Stable Diffusion</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎬</div>
+                        <div class="feature-title">Video Creation</div>
+                        <div class="feature-desc">RunwayML, Sora (coming soon)</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💰</div>
+                        <div class="feature-title">Cost Optimization</div>
+                        <div class="feature-desc">Smart routing, budget tracking</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="nextStep()">Get Started</button>
+                    <button class="btn-secondary" onclick="skipTour()">Skip Tour</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: How It Works -->
+            <div class="step-content" id="step2" style="display: none;">
+                <div class="step-icon">🔧</div>
+                <h1 class="step-title">How It Works</h1>
+                <p class="step-description">
+                    Simple 3-step process to get you started with AI services.<br>
+                    Your API keys stay secure and are never shared.
+                </p>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">1️⃣</div>
+                        <div class="feature-title">Connect Services</div>
+                        <div class="feature-desc">Add your API keys for AI services you want to use</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">2️⃣</div>
+                        <div class="feature-title">Make Requests</div>
+                        <div class="feature-desc">Use our unified interface to call any connected service</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">3️⃣</div>
+                        <div class="feature-title">Track Usage</div>
+                        <div class="feature-desc">Monitor costs, performance, and optimize your workflows</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="nextStep()">Continue</button>
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Supported Services -->
+            <div class="step-content" id="step3" style="display: none;">
+                <div class="step-icon">🌐</div>
+                <h1 class="step-title">Supported AI Services</h1>
+                <p class="step-description">
+                    Connect to your favorite AI platforms with your own API keys.<br>
+                    We support all major providers and custom endpoints.
+                </p>
+                
+                <div class="integration-preview">
+                    <div class="integration-item">
+                        <div class="integration-logo">🧠</div>
+                        <div class="integration-name">OpenAI</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="integration-logo">🤖</div>
+                        <div class="integration-name">Claude</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="integration-logo">💎</div>
+                        <div class="integration-name">Gemini</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="integration-logo">🎨</div>
+                        <div class="integration-name">DALL-E</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="integration-logo">🌈</div>
+                        <div class="integration-name">Midjourney</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="integration-logo">⚡</div>
+                        <div class="integration-name">Stable Diffusion</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f0f4f8; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #2d3748; font-weight: 500;">
+                        🔒 <strong>Your data is secure:</strong> API keys are encrypted and stored locally. 
+                        We never see or store your actual keys.
+                    </p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="nextStep()">Almost Done!</button>
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Ready to Start -->
+            <div class="step-content" id="step4" style="display: none;">
+                <div class="step-icon">🎉</div>
+                <h1 class="step-title">You're All Set!</h1>
+                <p class="step-description">
+                    Ready to supercharge your AI workflows?<br>
+                    Let's add your first integration and start creating.
+                </p>
+                
+                <div style="background: linear-gradient(135deg, #e6fffa, #b2f5ea); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <h3 style="margin: 0 0 15px 0; color: #234e52;">🚀 Quick Start Checklist</h3>
+                    <div style="text-align: left; max-width: 300px; margin: 0 auto;">
+                        <div style="margin: 10px 0; color: #2d3748;">✅ Account created and verified</div>
+                        <div style="margin: 10px 0; color: #718096;">⏳ Add your first AI service</div>
+                        <div style="margin: 10px 0; color: #718096;">⏳ Make your first AI request</div>
+                        <div style="margin: 10px 0; color: #718096;">⏳ Explore advanced features</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="startIntegration()">Add First Integration</button>
+                    <button class="btn-secondary" onclick="goToDashboard()">Go to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        function showStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById('step' + i).style.display = 'none';
+            }
+            
+            // Show current step
+            document.getElementById('step' + step).style.display = 'block';
+            currentStep = step;
+            updateProgress();
+            
+            // Trigger animations
+            setTimeout(() => {
+                const stepElement = document.getElementById('step' + step);
+                stepElement.style.opacity = '0';
+                stepElement.style.animation = 'none';
+                setTimeout(() => {
+                    stepElement.style.opacity = '1';
+                    const animatedElements = stepElement.querySelectorAll('.step-icon, .step-title, .step-description, .action-buttons, .feature-item, .integration-item');
+                    animatedElements.forEach((el, index) => {
+                        el.style.animation = 'none';
+                        setTimeout(() => {
+                            el.style.animation = `fadeInUp 0.6s ease ${index * 0.1}s forwards`;
+                        }, 50);
+                    });
+                }, 50);
+            }, 100);
+        }
+        
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                showStep(currentStep + 1);
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+        
+        function skipTour() {
+            window.location.href = '/dashboard';
+        }
+        
+        function startIntegration() {
+            window.location.href = '/integration-quickstart';
+        }
+        
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+        
+        // Initialize
+        updateProgress();
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                e.preventDefault();
+                nextStep();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevStep();
+            } else if (e.key === 'Escape') {
+                skipTour();
+            }
+        });
+        
+        // Auto-advance demo (optional)
+        let autoAdvance = false;
+        if (autoAdvance) {
+            setInterval(() => {
+                if (currentStep < totalSteps) {
+                    nextStep();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

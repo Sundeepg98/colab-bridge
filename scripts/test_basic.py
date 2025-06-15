@@ -7,9 +7,13 @@ Simple test to verify the setup works
 import sys
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Load environment variables
+load_dotenv()
 
 from colab_integration.bridge import ClaudeColabBridge
 

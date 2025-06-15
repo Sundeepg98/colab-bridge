@@ -1,0 +1,33 @@
+{
+  "google_cloud": {
+    "service_account_path": "./credentials/your-service-account.json",
+    "drive_folder_id": "your-google-drive-folder-id",
+    "project_id": "your-gcp-project-id"
+  },
+  "colab": {
+    "default_timeout": 60,
+    "poll_interval": 3,
+    "max_retries": 3,
+    "auto_cleanup": true
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "./logs/colab-bridge.log",
+    "max_size": "10MB",
+    "backup_count": 5
+  },
+  "tools": {
+    "default_tool_name": "colab-bridge",
+    "allowed_tools": ["*"],
+    "rate_limit": {
+      "requests_per_minute": 10,
+      "requests_per_hour": 100
+    }
+  },
+  "security": {
+    "enable_file_cleanup": true,
+    "max_file_age_hours": 24,
+    "allowed_file_extensions": [".py", ".ipynb", ".txt", ".md"],
+    "max_code_length": 50000
+  }
+}

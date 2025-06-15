@@ -13,6 +13,24 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 import io
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    project_root = Path(__file__).parent.parent
+    env_path = project_root / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    # If python-dotenv is not available, try to load manually
+    project_root = Path(__file__).parent.parent
+    env_path = project_root / '.env'
+    if env_path.exists():
+        with open(env_path, 'r') as f:
+            for line in f:
+                if '=' in line and not line.strip().startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+
 class UniversalColabBridge:
     """Universal bridge for any tool to execute code in Google Colab"""
     
@@ -80,15 +98,22 @@ class UniversalColabBridge:
             'parents': [self.folder_id]
         }
         
-        media = MediaFileUpload(
-            io.BytesIO(json.dumps(command, indent=2).encode('utf-8')),
-            mimetype='application/json'
-        )
+        # Create temporary file for upload
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(command, f, indent=2)
+            temp_path = f.name
         
-        self.drive_service.files().create(
-            body=file_metadata,
-            media_body=media
-        ).execute()
+        try:
+            media = MediaFileUpload(temp_path, mimetype='application/json')
+            
+            self.drive_service.files().create(
+                body=file_metadata,
+                media_body=media
+            ).execute()
+        finally:
+            # Clean up temporary file
+            os.unlink(temp_path)
     
     def _wait_for_result(self, command_id, timeout):
         """Wait for result file"""

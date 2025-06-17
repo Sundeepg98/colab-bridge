@@ -1,0 +1,11 @@
+# Test 1: Basic Python execution
+python test_basic.py
+
+# Test 2: GPU test
+python test_gpu.py
+
+# Test 3: File generation test
+python test_plots.py
+
+# Test 4: Check generated files
+ls -la *.png

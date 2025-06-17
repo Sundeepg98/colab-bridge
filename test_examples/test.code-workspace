@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "colab-bridge.autoConnect": true,
+    "colab-bridge.serviceAccountPath": "/var/projects/automation-engine/credentials/automation-engine-463103-ee5a06e18248.json"
+  }
+}

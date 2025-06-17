@@ -2,23 +2,34 @@ import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as path from 'path';
 
+let statusBar: vscode.StatusBarItem;
+
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Claude Tools extension is now active!');
+    console.log('Colab Bridge extension is now active!');
+
+    // Create status bar item
+    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    statusBar.text = "$(cloud) Colab GPU";
+    statusBar.tooltip = "Click to execute current file in Colab";
+    statusBar.command = 'colab-bridge.executeInColab';
+    statusBar.backgroundColor = undefined;
+    statusBar.show();
+    context.subscriptions.push(statusBar);
 
     // Register commands
-    const executeFile = vscode.commands.registerCommand('claude-tools.executeInColab', async () => {
+    const executeFile = vscode.commands.registerCommand('colab-bridge.executeInColab', async () => {
         await executeInColab(false);
     });
 
-    const executeSelection = vscode.commands.registerCommand('claude-tools.executeSelectionInColab', async () => {
+    const executeSelection = vscode.commands.registerCommand('colab-bridge.executeSelectionInColab', async () => {
         await executeInColab(true);
     });
 
-    const openNotebook = vscode.commands.registerCommand('claude-tools.openColabNotebook', async () => {
+    const openNotebook = vscode.commands.registerCommand('colab-bridge.openColabNotebook', async () => {
         await openColabNotebook();
     });
 
-    const configure = vscode.commands.registerCommand('claude-tools.configure', async () => {
+    const configure = vscode.commands.registerCommand('colab-bridge.configure', async () => {
         await configureIntegration();
     });
 
@@ -58,11 +69,15 @@ async function executeInColab(selectionOnly: boolean) {
     }
 
     // Check configuration
-    const config = vscode.workspace.getConfiguration('claude-tools');
+    const config = vscode.workspace.getConfiguration('colab-bridge');
     const pythonPath = config.get<string>('pythonPath', 'python3');
     const timeout = config.get<number>('timeout', 60);
     const showOutput = config.get<boolean>('showOutput', true);
 
+    // Update status bar to show executing
+    statusBar.text = "$(sync~spin) Colab...";
+    statusBar.tooltip = "Executing in Google Colab...";
+    
     // Show progress
     await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -121,13 +136,13 @@ except Exception as e:
                 }
 
                 if (error) {
-                    if (error.message.includes('claude-tools')) {
+                    if (error.message.includes('colab_integration')) {
                         vscode.window.showErrorMessage(
-                            'Claude Tools not installed. Run: pip install claude-tools',
+                            'Colab Bridge not installed. Run: pip install -e /var/projects/colab-bridge',
                             'Install Guide'
                         ).then(selection => {
                             if (selection === 'Install Guide') {
-                                vscode.env.openExternal(vscode.Uri.parse('https://github.com/claude-tools/colab-integration#installation'));
+                                vscode.env.openExternal(vscode.Uri.parse('https://github.com/colab-bridge/colab-integration#installation'));
                             }
                         });
                     } else {
@@ -160,27 +175,41 @@ except Exception as e:
 
                 // Show results
                 if (status === 'SUCCESS') {
+                    statusBar.text = "$(check) Colab GPU";
+                    statusBar.tooltip = "Last execution: Success";
                     vscode.window.showInformationMessage('✅ Code executed successfully in Colab!');
                     if (showOutput && content.trim()) {
                         showOutputDocument('Colab Output', content);
                     }
                 } else if (status === 'ERROR') {
+                    statusBar.text = "$(error) Colab GPU";
+                    statusBar.tooltip = "Last execution: Failed";
                     vscode.window.showErrorMessage('❌ Execution failed in Colab');
                     if (content.trim()) {
                         showOutputDocument('Colab Error', content);
                     }
                 } else if (status === 'PENDING') {
+                    statusBar.text = "$(warning) Colab GPU";
+                    statusBar.tooltip = "Colab notebook not running";
                     vscode.window.showWarningMessage(
                         'Request queued for Colab processing',
                         'Open Colab'
                     ).then(selection => {
                         if (selection === 'Open Colab') {
-                            vscode.commands.executeCommand('claude-tools.openColabNotebook');
+                            vscode.commands.executeCommand('colab-bridge.openColabNotebook');
                         }
                     });
                 } else {
+                    statusBar.text = "$(cloud) Colab GPU";
+                    statusBar.tooltip = "Click to execute current file in Colab";
                     vscode.window.showErrorMessage('Unexpected response from Colab integration');
                 }
+
+                // Reset status bar after a delay
+                setTimeout(() => {
+                    statusBar.text = "$(cloud) Colab GPU";
+                    statusBar.tooltip = "Click to execute current file in Colab";
+                }, 5000);
 
                 resolve();
             });
@@ -211,7 +240,7 @@ async function openColabNotebook() {
     const notebookUrl = 'https://colab.research.google.com/drive/1XhtEroHqX5Y8hetP-xCN_FMF-Ea81tAA';
     
     const action = await vscode.window.showInformationMessage(
-        'Open Claude Tools Colab processor?',
+        'Open Colab Bridge processor?',
         'Open in Browser',
         'Copy URL'
     );
@@ -228,7 +257,7 @@ async function configureIntegration() {
     const items = [
         {
             label: '$(gear) Open Settings',
-            description: 'Configure Claude Tools extension settings',
+            description: 'Configure Colab Bridge extension settings',
             action: 'settings'
         },
         {
@@ -249,14 +278,14 @@ async function configureIntegration() {
     ];
 
     const selection = await vscode.window.showQuickPick(items, {
-        placeHolder: 'Configure Claude Tools Colab Integration'
+        placeHolder: 'Configure Colab Bridge Integration'
     });
 
     if (!selection) return;
 
     switch (selection.action) {
         case 'settings':
-            vscode.commands.executeCommand('workbench.action.openSettings', 'claude-tools');
+            vscode.commands.executeCommand('workbench.action.openSettings', 'colab-bridge');
             break;
             
         case 'serviceAccount':
@@ -271,7 +300,7 @@ async function configureIntegration() {
             });
             
             if (fileUri && fileUri[0]) {
-                const config = vscode.workspace.getConfiguration('claude-tools');
+                const config = vscode.workspace.getConfiguration('colab-bridge');
                 await config.update('serviceAccountPath', fileUri[0].fsPath, vscode.ConfigurationTarget.Global);
                 vscode.window.showInformationMessage('Service account path updated');
             }
@@ -290,30 +319,30 @@ async function configureIntegration() {
             });
             
             if (folderId) {
-                const config = vscode.workspace.getConfiguration('claude-tools');
+                const config = vscode.workspace.getConfiguration('colab-bridge');
                 await config.update('driveFolder', folderId, vscode.ConfigurationTarget.Global);
                 vscode.window.showInformationMessage('Drive folder ID updated');
             }
             break;
             
         case 'guide':
-            vscode.env.openExternal(vscode.Uri.parse('https://github.com/claude-tools/colab-integration#setup'));
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/colab-bridge/colab-integration#setup'));
             break;
     }
 }
 
 function showWelcomeMessage() {
     vscode.window.showInformationMessage(
-        'Welcome to Claude Tools! Execute Python code in Google Colab.',
+        'Welcome to Colab Bridge! Execute Python code in Google Colab.',
         'Setup Guide',
         'Try Example'
     ).then(selection => {
         if (selection === 'Setup Guide') {
-            vscode.commands.executeCommand('claude-tools.configure');
+            vscode.commands.executeCommand('colab-bridge.configure');
         } else if (selection === 'Try Example') {
             // Create example file
             vscode.workspace.openTextDocument({
-                content: `# Claude Tools Colab Example
+                content: `# Colab Bridge Example
 print("Hello from Google Colab!")
 
 import datetime
@@ -345,5 +374,5 @@ print("✅ Example completed!")`,
 }
 
 export function deactivate() {
-    console.log('Claude Tools extension deactivated');
+    console.log('Colab Bridge extension deactivated');
 }

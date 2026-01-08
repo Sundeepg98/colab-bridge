@@ -1,5 +1,9 @@
 # Claude Tools - Git Ignore
 
+# Node.js
+node_modules/
+*.vsix
+
 # Credentials and secrets
 .env
 *.json

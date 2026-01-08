@@ -59,10 +59,19 @@ class UniversalColabBridge:
             scopes=['https://www.googleapis.com/auth/drive']
         )
         self.drive_service = build('drive', 'v3', credentials=credentials)
-        print(f"✅ Universal Colab Bridge initialized: {self.instance_id}")
+        # Only print in debug mode to avoid breaking tool parsing
+        if os.environ.get('COLAB_BRIDGE_DEBUG'):
+            import sys
+            print(f"✅ Universal Colab Bridge initialized: {self.instance_id}", file=sys.stderr)
         
-    def execute_code(self, code, timeout=30):
-        """Execute Python code in Colab"""
+    def execute_code(self, code, timeout=30, return_format='dict'):
+        """Execute Python code in Colab
+        
+        Args:
+            code: Python code to execute
+            timeout: Timeout in seconds
+            return_format: 'dict' for normal dict, 'vscode' for VS Code compatible output
+        """
         if not self.drive_service:
             self.initialize()
             
@@ -75,12 +84,32 @@ class UniversalColabBridge:
             'tool': self.tool_name
         }
         
-        # Write command file to Drive
-        self._write_command(command)
+        # Store command_id for reference
+        self.command_id = command['id']
+        
+        # Write command file to Drive (takes ~2 seconds)
+        try:
+            upload_start = time.time()
+            self._write_command(command)
+            upload_time = time.time() - upload_start
+            # Only print timing in debug mode or to stderr to avoid breaking VS Code parsing
+            if upload_time > 1 and os.environ.get('COLAB_BRIDGE_DEBUG'):
+                import sys
+                print(f"📤 Command uploaded in {upload_time:.1f}s", file=sys.stderr)
+        except Exception as e:
+            print(f"❌ Error writing command: {e}")
+            raise
         
         # Wait for result
         try:
             result = self._wait_for_result(command['id'], timeout)
+            
+            # If VS Code format requested, convert visualizations to text
+            if return_format == 'vscode' and result.get('visualizations'):
+                # For now, add a note about visualizations in text output
+                viz_count = len(result['visualizations'])
+                result['output'] = result.get('output', '') + f"\n\n[{viz_count} visualization(s) captured - enhanced display coming soon]"
+                
             return result
         except TimeoutError:
             return {
@@ -115,17 +144,34 @@ class UniversalColabBridge:
             # Clean up temporary file
             os.unlink(temp_path)
     
+    def _create_command_file(self, code):
+        """Create command file (compatibility method)"""
+        command = {
+            'id': f"cmd_{self.instance_id}_{int(time.time())}",
+            'type': 'execute',
+            'code': code,
+            'timestamp': time.time(),
+            'tool': self.tool_name
+        }
+        self.command_id = command['id']
+        self._write_command(command)
+        return command
+    
     def _wait_for_result(self, command_id, timeout):
-        """Wait for result file"""
+        """Wait for result file with instant polling"""
         start_time = time.time()
-        result_name = f"result_{command_id}.json"
+        poll_count = 0
         
         while time.time() - start_time < timeout:
-            # Look for result file
-            query = f"name='{result_name}' and '{self.folder_id}' in parents and trashed=false"
-            results = self.drive_service.files().list(q=query, fields="files(id)").execute()
+            poll_count += 1
             
+            # Look for result file - use contains to catch any pattern
+            # The processor might create result_result_ID or other variations
+            base_id = command_id.replace('cmd_', '')
+            query = f"name contains '{base_id}' and name contains 'result' and '{self.folder_id}' in parents and trashed=false"
+            results = self.drive_service.files().list(q=query, fields="files(id, name)").execute()
             files = results.get('files', [])
+                    
             if files:
                 # Read result
                 content = self.drive_service.files().get_media(fileId=files[0]['id']).execute()
@@ -134,9 +180,30 @@ class UniversalColabBridge:
                 # Clean up result file
                 self.drive_service.files().delete(fileId=files[0]['id']).execute()
                 
+                # Log timing for debugging
+                elapsed = time.time() - start_time
+                if elapsed < 1:
+                    print(f"⚡ Got result in {elapsed:.3f}s after {poll_count} polls")
+                
                 return result
             
-            time.sleep(1)
+            # Smart polling based on actual Drive API performance
+            # Each API call takes ~400ms, so we adjust sleep times accordingly
+            elapsed = time.time() - start_time
+            
+            if elapsed < 3:
+                # First 3 seconds: No sleep needed
+                # API call itself takes 400ms, giving us ~7 polls in 3 seconds
+                pass
+            elif elapsed < 10:
+                # 3-10 seconds: Add small delay
+                time.sleep(0.2)  # Total ~600ms between polls
+            elif elapsed < 30:
+                # 10-30 seconds: Poll every second
+                time.sleep(0.6)  # Total ~1s between polls (400ms API + 600ms sleep)
+            else:
+                # After 30 seconds: Poll every 2 seconds
+                time.sleep(1.6)  # Total ~2s between polls
         
         raise TimeoutError(f"Command {command_id} timed out after {timeout}s")
 

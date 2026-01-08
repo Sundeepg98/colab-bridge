@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+import { showEnhancedOutput, EnhancedResult } from './enhanced_output';
 
 let statusBar: vscode.StatusBarItem;
 
@@ -73,70 +76,99 @@ async function executeInColab(selectionOnly: boolean) {
     const pythonPath = config.get<string>('pythonPath', 'python3');
     const timeout = config.get<number>('timeout', 60);
     const showOutput = config.get<boolean>('showOutput', true);
+    const serviceAccountPath = config.get<string>('serviceAccountPath', '');
+    const driveFolder = config.get<string>('driveFolder', '');
 
     // Update status bar to show executing
-    statusBar.text = "$(sync~spin) Colab...";
-    statusBar.tooltip = "Executing in Google Colab...";
+    statusBar.text = "$(rocket) Sending...";
+    statusBar.tooltip = "Sending code to Google Colab...";
     
     // Show progress
     await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: "Executing in Google Colab...",
+        title: "Executing in Colab",
         cancellable: true
     }, async (progress, token) => {
         return new Promise<void>((resolve, reject) => {
-            progress.report({ message: "Sending code to Colab..." });
-
-            // Escape code for shell
-            const escapedCode = code.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+            // Flash "Sending..." for just 100ms since it's instant
+            progress.report({ message: "Sending code..." });
             
-            // Create Python command
+            // After 100ms, switch to "Executing..." since that's what takes time
+            setTimeout(() => {
+                statusBar.text = "$(sync~spin) Executing...";
+                statusBar.tooltip = "Executing code in Google Colab...";
+                progress.report({ message: "Executing in Colab..." });
+            }, 100);
+
+            // Create Python command as a file to avoid escaping issues
             const pythonCommand = `
 from colab_integration.universal_bridge import UniversalColabBridge
 import sys
+import os
+
+# Suppress bridge initialization output
+import io
+from contextlib import redirect_stdout
 
 try:
-    bridge = UniversalColabBridge(tool_name='vscode')
-    bridge.initialize()
+    with redirect_stdout(io.StringIO()):
+        bridge = UniversalColabBridge(tool_name='vscode')
+        bridge.initialize()
     
-    code = """${escapedCode}"""
+    code = '''${code.replace(/'''/g, "\\'\\'\\'")}'''
     result = bridge.execute_code(code, timeout=${timeout})
     
-    if result.get('status') == 'success':
-        print('SUCCESS')
-        print('---OUTPUT---')
-        print(result.get('output', ''))
-        print('---END---')
-    elif result.get('status') == 'error':
-        print('ERROR')
-        print('---ERROR---')
-        print(result.get('error', 'Unknown error'))
-        print('---END---')
-    else:
-        print('PENDING')
-        print('---INFO---')
-        print(f"Request queued: {result.get('request_id', 'unknown')}")
-        print('Make sure Colab notebook is running!')
-        print('---END---')
+    # Return the full JSON result
+    import json
+    print('RESULT_JSON')
+    print('---JSON_START---')
+    print(json.dumps(result))
+    print('---JSON_END---')
         
 except Exception as e:
-    print('EXCEPTION')
-    print('---ERROR---')
-    print(f"Failed to execute: {str(e)}")
-    print('---END---')
+    # Return error as JSON
+    result = {
+        'status': 'error',
+        'error': f"Failed to execute: {str(e)}"
+    }
+    print('RESULT_JSON')
+    print('---JSON_START---')
+    print(json.dumps(result))
+    print('---JSON_END---')
 `;
 
+            // Write to temp file to avoid shell escaping issues
+            const tempFile = path.join(os.tmpdir(), `colab_bridge_${Date.now()}.py`);
+            fs.writeFileSync(tempFile, pythonCommand);
+
+            // Prepare environment variables
+            const env = { ...process.env };
+            if (serviceAccountPath) {
+                env.SERVICE_ACCOUNT_PATH = serviceAccountPath;
+            }
+            if (driveFolder) {
+                env.GOOGLE_DRIVE_FOLDER_ID = driveFolder;
+            }
+
             // Execute command
-            const child = exec(`${pythonPath} -c "${pythonCommand}"`, {
-                timeout: (timeout + 10) * 1000 // Add buffer to timeout
+            const child = exec(`${pythonPath} "${tempFile}"`, {
+                timeout: (timeout + 10) * 1000, // Add buffer to timeout
+                env: env
             }, (error, stdout, stderr) => {
+                // Clean up temp file
+                try {
+                    fs.unlinkSync(tempFile);
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+
                 if (token.isCancellationRequested) {
                     resolve();
                     return;
                 }
 
                 if (error) {
-                    if (error.message.includes('colab_integration')) {
+                    if (error.message.includes('ModuleNotFoundError') && error.message.includes('colab_integration')) {
                         vscode.window.showErrorMessage(
                             'Colab Bridge not installed. Run: pip install -e /var/projects/colab-bridge',
                             'Install Guide'
@@ -157,59 +189,83 @@ except Exception as e:
                 const lines = output.split('\n');
                 const status = lines[0];
 
-                let content = '';
-                let startCapture = false;
-                
-                for (const line of lines) {
-                    if (line === '---OUTPUT---' || line === '---ERROR---' || line === '---INFO---') {
-                        startCapture = true;
-                        continue;
-                    }
-                    if (line === '---END---') {
-                        break;
-                    }
-                    if (startCapture) {
-                        content += line + '\n';
-                    }
-                }
-
-                // Show results
-                if (status === 'SUCCESS') {
-                    statusBar.text = "$(check) Colab GPU";
-                    statusBar.tooltip = "Last execution: Success";
-                    vscode.window.showInformationMessage('✅ Code executed successfully in Colab!');
-                    if (showOutput && content.trim()) {
-                        showOutputDocument('Colab Output', content);
-                    }
-                } else if (status === 'ERROR') {
-                    statusBar.text = "$(error) Colab GPU";
-                    statusBar.tooltip = "Last execution: Failed";
-                    vscode.window.showErrorMessage('❌ Execution failed in Colab');
-                    if (content.trim()) {
-                        showOutputDocument('Colab Error', content);
-                    }
-                } else if (status === 'PENDING') {
-                    statusBar.text = "$(warning) Colab GPU";
-                    statusBar.tooltip = "Colab notebook not running";
-                    vscode.window.showWarningMessage(
-                        'Request queued for Colab processing',
-                        'Open Colab'
-                    ).then(selection => {
-                        if (selection === 'Open Colab') {
-                            vscode.commands.executeCommand('colab-bridge.openColabNotebook');
+                if (status === 'RESULT_JSON') {
+                    // Extract JSON content
+                    let jsonContent = '';
+                    let startCapture = false;
+                    
+                    for (const line of lines) {
+                        if (line === '---JSON_START---') {
+                            startCapture = true;
+                            continue;
                         }
-                    });
+                        if (line === '---JSON_END---') {
+                            break;
+                        }
+                        if (startCapture) {
+                            jsonContent += line + '\n';
+                        }
+                    }
+
+                    try {
+                        const result = JSON.parse(jsonContent) as EnhancedResult;
+                        
+                        if (result.status === 'success') {
+                            statusBar.text = "$(check) Colab GPU";
+                            statusBar.tooltip = "Last execution: Success";
+                            vscode.window.showInformationMessage('✅ Execution completed!');
+                            
+                            if (showOutput) {
+                                // Check if we have visualizations
+                                if (result.visualizations && result.visualizations.length > 0) {
+                                    console.log(`[Colab Bridge] Showing enhanced output with ${result.visualizations.length} visualization(s)`);
+                                    showEnhancedOutput(result);
+                                } else if (result.output && result.output.trim()) {
+                                    showOutputDocument('Colab Output', result.output);
+                                }
+                            }
+                        } else if (result.status === 'error') {
+                            statusBar.text = "$(error) Colab GPU";
+                            statusBar.tooltip = "Last execution: Failed";
+                            vscode.window.showErrorMessage('❌ Execution failed');
+                            if (result.error && result.error.trim()) {
+                                showOutputDocument('Colab Error', result.error);
+                            }
+                        } else if (result.status === 'pending') {
+                            // Handle pending status
+                            statusBar.text = "$(sync~spin) Executing...";
+                            statusBar.tooltip = "Executing in Colab...";
+                            
+                            const requestId = (result as any).request_id;
+                            if (requestId) {
+                                vscode.window.showInformationMessage(`✅ Code sent! Now executing in Colab...`);
+                                console.log(`[Colab Bridge] Starting poll for request: ${requestId}`);
+                                pollForResult(pythonPath, requestId, timeout, showOutput, serviceAccountPath, driveFolder);
+                            } else {
+                                vscode.window.showWarningMessage(
+                                    'Request queued for Colab processing',
+                                    'Open Colab'
+                                ).then(selection => {
+                                    if (selection === 'Open Colab') {
+                                        vscode.commands.executeCommand('colab-bridge.openColabNotebook');
+                                    }
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[Colab Bridge] Failed to parse JSON result:', e);
+                        statusBar.text = "$(error) Colab GPU";
+                        statusBar.tooltip = "Parse error";
+                        vscode.window.showErrorMessage('Failed to parse Colab response');
+                    }
                 } else {
+                    // Fallback to old parsing for backward compatibility
                     statusBar.text = "$(cloud) Colab GPU";
                     statusBar.tooltip = "Click to execute current file in Colab";
-                    vscode.window.showErrorMessage('Unexpected response from Colab integration');
+                    vscode.window.showErrorMessage('Unexpected response format from Colab integration');
                 }
 
-                // Reset status bar after a delay
-                setTimeout(() => {
-                    statusBar.text = "$(cloud) Colab GPU";
-                    statusBar.tooltip = "Click to execute current file in Colab";
-                }, 5000);
+                // Don't reset status bar here - let the polling handle it or keep the status visible
 
                 resolve();
             });
@@ -234,6 +290,206 @@ async function showOutputDocument(title: string, content: string) {
         viewColumn: vscode.ViewColumn.Beside,
         preview: false
     });
+}
+
+async function pollForResult(pythonPath: string, requestId: string, timeout: number, showOutput: boolean, serviceAccountPath: string, driveFolder: string) {
+    let pollCount = 0;
+    const startTime = Date.now();
+    const maxTime = timeout * 1000; // Convert to milliseconds
+    
+    // More aggressive polling for faster response
+    const getPollDelay = () => {
+        if (pollCount < 10) return 100;   // First 10 polls: 100ms (1 second total)
+        if (pollCount < 20) return 200;   // Next 10 polls: 200ms (2 seconds total)
+        if (pollCount < 30) return 500;   // Next 10 polls: 500ms (5 seconds total)
+        if (pollCount < 40) return 1000;  // Next 10 polls: 1s (10 seconds total)
+        return 2000;                      // After that: 2s intervals
+    };
+    
+    const poll = () => {
+        pollCount++;
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        
+        // Always show "Executing..." with elapsed time
+        if (elapsed < 3) {
+            statusBar.text = `$(sync~spin) Executing...`;
+            statusBar.tooltip = `Executing in Colab...`;
+        } else {
+            statusBar.text = `$(sync~spin) Executing... (${elapsed}s)`;
+            statusBar.tooltip = `Executing in Colab... (${elapsed}s elapsed)`;
+        }
+        
+        // Create Python command to check for result
+        const checkCommand = `
+import os
+import sys
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import json
+
+try:
+    # Get credentials from environment
+    creds_path = os.environ.get('SERVICE_ACCOUNT_PATH', '')
+    folder_id = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '')
+    
+    if not creds_path or not folder_id:
+        print('NOTFOUND')
+        print('---INFO---')
+        print('Missing configuration')
+        print('---END---')
+        sys.exit(0)
+    
+    # Setup Drive API
+    creds = service_account.Credentials.from_service_account_file(
+        creds_path,
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+    service = build('drive', 'v3', credentials=creds)
+    
+    # Look for result file - match what actually gets created
+    base_id = '${requestId}'.replace('cmd_', '')
+    # Search for files containing both 'result' and the base_id
+    query = f"'{folder_id}' in parents and name contains 'result' and name contains '{base_id}'"
+    results = service.files().list(q=query, fields='files(id, name)').execute()
+    
+    if results.get('files'):
+        # Found result!
+        file = results['files'][0]
+        content = service.files().get_media(fileId=file['id']).execute()
+        result_data = json.loads(content.decode('utf-8'))
+        
+        # Return the full JSON result
+        print('RESULT_JSON')
+        print('---JSON_START---')
+        print(json.dumps(result_data))
+        print('---JSON_END---')
+            
+        # Delete result file
+        try:
+            service.files().delete(fileId=file['id']).execute()
+        except:
+            pass
+    else:
+        print('NOTFOUND')
+        print('---INFO---')
+        print(f'Still processing... ({pollCount}/{maxPolls})')
+        print('---END---')
+        
+except Exception as e:
+    print('EXCEPTION')
+    print('---ERROR---')
+    print(f'Poll error: {str(e)}')
+    print('---END---')
+`;
+
+        // Write to temp file
+        const tempFile = path.join(os.tmpdir(), `colab_poll_${Date.now()}.py`);
+        fs.writeFileSync(tempFile, checkCommand);
+
+        // Prepare environment variables for polling
+        const pollEnv = { ...process.env };
+        if (serviceAccountPath) {
+            pollEnv.SERVICE_ACCOUNT_PATH = serviceAccountPath;
+        }
+        if (driveFolder) {
+            pollEnv.GOOGLE_DRIVE_FOLDER_ID = driveFolder;
+        }
+
+        exec(`${pythonPath} "${tempFile}"`, { env: pollEnv }, (error, stdout, stderr) => {
+            // Clean up temp file
+            try {
+                fs.unlinkSync(tempFile);
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+
+            if (error) {
+                // Stop polling
+                statusBar.text = "$(error) Colab GPU";
+                statusBar.tooltip = "Polling failed";
+                return;
+            }
+
+            const output = stdout.toString();
+            const lines = output.split('\n');
+            const status = lines[0];
+
+            if (status === 'RESULT_JSON') {
+                // Extract JSON content
+                let jsonContent = '';
+                let startCapture = false;
+                
+                for (const line of lines) {
+                    if (line === '---JSON_START---') {
+                        startCapture = true;
+                        continue;
+                    }
+                    if (line === '---JSON_END---') {
+                        break;
+                    }
+                    if (startCapture) {
+                        jsonContent += line + '\n';
+                    }
+                }
+
+                try {
+                    const result = JSON.parse(jsonContent) as EnhancedResult;
+                    console.log(`[Colab Bridge] Got result with status: ${result.status}`);
+                    
+                    if (result.status === 'success') {
+                        statusBar.text = "$(check) Colab GPU";
+                        statusBar.tooltip = "Last execution: Success";
+                        vscode.window.showInformationMessage('✅ Execution completed!');
+                        
+                        if (showOutput) {
+                            // Check if we have visualizations
+                            if (result.visualizations && result.visualizations.length > 0) {
+                                console.log(`[Colab Bridge] Showing enhanced output with ${result.visualizations.length} visualization(s)`);
+                                showEnhancedOutput(result);
+                            } else if (result.output && result.output.trim()) {
+                                console.log(`[Colab Bridge] Showing text output`);
+                                showOutputDocument('Colab Output', result.output);
+                            }
+                        }
+                    } else if (result.status === 'error') {
+                        statusBar.text = "$(error) Colab GPU";
+                        statusBar.tooltip = "Last execution: Failed";
+                        vscode.window.showErrorMessage('❌ Execution failed');
+                        if (result.error && result.error.trim()) {
+                            showOutputDocument('Colab Error', result.error);
+                        }
+                    }
+                    
+                    // Keep status visible for 3 seconds
+                    setTimeout(() => {
+                        statusBar.text = "$(cloud) Colab GPU";
+                        statusBar.tooltip = "Click to execute current file in Colab";
+                    }, 3000);
+                } catch (e) {
+                    console.error('[Colab Bridge] Failed to parse JSON result:', e);
+                    statusBar.text = "$(error) Colab GPU";
+                    statusBar.tooltip = "Parse error";
+                    vscode.window.showErrorMessage('Failed to parse Colab response');
+                }
+            } else if (status === 'NOTFOUND' && (Date.now() - startTime) >= maxTime) {
+                // Timeout
+                statusBar.text = "$(warning) Colab GPU";
+                statusBar.tooltip = "Execution timed out";
+                vscode.window.showWarningMessage('⏱️ Execution timed out. The notebook may still be processing.');
+                
+                setTimeout(() => {
+                    statusBar.text = "$(cloud) Colab GPU";
+                    statusBar.tooltip = "Click to execute current file in Colab";
+                }, 3000);
+            } else if (status === 'NOTFOUND') {
+                // Continue polling - schedule next poll immediately with adaptive timing
+                setTimeout(poll, getPollDelay());
+            }
+        });
+    };
+    
+    // Start polling immediately
+    poll();
 }
 
 async function openColabNotebook() {

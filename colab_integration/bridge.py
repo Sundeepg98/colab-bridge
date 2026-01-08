@@ -84,11 +84,14 @@ class ClaudeColabBridge:
         os.remove(temp_file)
     
     def _wait_for_result(self, command_id, timeout):
-        """Wait for command result"""
+        """Wait for command result with instant polling"""
         start_time = time.time()
         result_filename = f"result_{command_id}.json"
+        poll_count = 0
         
         while time.time() - start_time < timeout:
+            poll_count += 1
+            
             # Search for result file
             results = self.drive_service.files().list(
                 q=f"name='{result_filename}' and parents in '{self.folder_id}'",
@@ -113,9 +116,23 @@ class ClaudeColabBridge:
                 # Parse result
                 downloaded.seek(0)
                 result = json.loads(downloaded.read().decode())
-                return result
                 
-            time.sleep(1)
+                # Log timing for debugging
+                elapsed = time.time() - start_time
+                if elapsed < 1:
+                    print(f"⚡ Got result in {elapsed:.3f}s after {poll_count} polls")
+                
+                return result
+            
+            # Adaptive polling - super fast at first, then slower
+            if poll_count < 10:
+                time.sleep(0.1)  # 100ms for first second
+            elif poll_count < 20:
+                time.sleep(0.2)  # 200ms for next 2 seconds
+            elif poll_count < 30:
+                time.sleep(0.5)  # 500ms for next 5 seconds
+            else:
+                time.sleep(1.0)  # 1s after that
         
         raise TimeoutError(f"Command {command_id} timed out after {timeout}s")
 
